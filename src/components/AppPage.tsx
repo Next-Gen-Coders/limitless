@@ -1,6 +1,4 @@
-import React from "react";
-import AppLayout from "./AppLayout";
-import {
+import AppLayout from "./AppLayout";import {
   Card,
   CardContent,
   CardDescription,

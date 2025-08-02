@@ -1,24 +1,24 @@
 import React, { useState } from "react";
 import {
   Plus,
-  MessageSquare,
   Search,
   Twitter,
   MessageCircle,
   Clock,
   Menu,
-  Settings,
   User,
-  Home,
-  Wallet,
   PanelLeft,
   X,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Card, CardContent } from "./ui/card";
 import { Separator } from "./ui/separator";
 import { ScrollArea } from "./ui/scroll-area";
+import SidebarNavItem from "./ui/sidebar-nav-item";
+import ChatItem from "./ui/chat-item";
+import Logo from "./ui/logo";
+import MobileOverlay from "./ui/mobile-overlay";
+import { navigationItems, recentChats } from "../constants/sidebar";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -37,19 +37,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const navigationItems = [
-    { icon: Home, label: "Dashboard", active: true },
-    { icon: Wallet, label: "Wallets", active: false },
-    { icon: MessageSquare, label: "Chats", active: false },
-    { icon: Settings, label: "Settings", active: false },
-  ];
-
-  const recentChats = [
-    { id: 1, title: "Portfolio Analysis", time: "2 min ago" },
-    { id: 2, title: "Token Swap", time: "1 hour ago" },
-    { id: 3, title: "Market Research", time: "3 hours ago" },
-  ];
-
   const sidebarContent = (
     <div
       className={`bg-sidebar border-r border-sidebar-border transition-all duration-300 ${
@@ -59,18 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* Header */}
       <div className="p-4 border-b border-sidebar-border">
         <div className="flex items-center justify-between">
-          {!isCollapsed && (
-            <div className="flex items-center space-x-2">
-              <img
-                src="/logo.png"
-                alt="Limitless"
-                className="h-8 w-fit dark:invert"
-              />
-              <span className="text-lg font-bold text-sidebar-foreground font-family-zilla">
-                Limitless
-              </span>
-            </div>
-          )}
+          {!isCollapsed && <Logo size="md" />}
           <Button
             variant="ghost"
             size="sm"
@@ -100,18 +76,13 @@ const Sidebar: React.FC<SidebarProps> = ({
         </Button>
 
         {navigationItems.map((item, index) => (
-          <Button
+          <SidebarNavItem
             key={index}
-            variant={item.active ? "secondary" : "ghost"}
-            className={`w-full ${
-              item.active
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-            } ${isCollapsed ? "justify-center" : "justify-start"}`}
-          >
-            <item.icon size={16} />
-            {!isCollapsed && item.label}
-          </Button>
+            icon={item.icon}
+            label={item.label}
+            active={item.active}
+            isCollapsed={isCollapsed}
+          />
         ))}
       </div>
 
@@ -141,27 +112,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               </h3>
               <ScrollArea className="h-[300px]">
                 {recentChats.map((chat) => (
-                  <Card
-                    key={chat.id}
-                    className="mb-2 bg-sidebar-accent/30 border-sidebar-border hover:bg-sidebar-accent/50 transition-colors cursor-pointer"
-                  >
-                    <CardContent className="p-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <MessageSquare
-                            size={14}
-                            className="text-muted-foreground"
-                          />
-                          <span className="text-sm text-sidebar-foreground font-medium">
-                            {chat.title}
-                          </span>
-                        </div>
-                        <span className="text-xs text-muted-foreground">
-                          {chat.time}
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <ChatItem key={chat.id} title={chat.title} time={chat.time} />
                 ))}
               </ScrollArea>
             </div>
@@ -238,15 +189,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   if (isMobile) {
     return (
       <>
-        {/* Mobile Overlay */}
-        {isOpen && (
-          <div
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-            onClick={onClose}
-          />
-        )}
+        <MobileOverlay isOpen={isOpen} onClose={onClose} />
 
-        {/* Mobile Sidebar */}
         <div
           className={`fixed top-0 left-0 h-full z-50 lg:hidden transform transition-transform duration-300 ease-in-out ${
             isOpen ? "translate-x-0" : "-translate-x-full"

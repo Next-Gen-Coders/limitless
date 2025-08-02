@@ -31,7 +31,13 @@ const AstryxLayout: React.FC = () => {
       {/* Main content area with sidebar */}
       <div className="flex-1 flex overflow-hidden">
         {/* Desktop Sidebar */}
-        <Sidebar isCollapsed={isSidebarCollapsed} onToggle={toggleSidebar} />
+        <Sidebar
+          isCollapsed={isSidebarCollapsed}
+          onToggle={toggleSidebar}
+          isMobile={false}
+          isOpen={false}
+          onClose={() => {}}
+        />
 
         {/* Main content */}
         <MainContent />

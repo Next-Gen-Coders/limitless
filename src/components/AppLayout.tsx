@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
-import { useTheme } from "../contexts/ThemeContext";
-import { Sun, Moon, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "./ui/button";
+import ThemeToggle from "./ui/theme-toggle";
+import { useResponsive } from "../hooks/useResponsive";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -10,21 +11,8 @@ interface AppLayoutProps {
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const { theme, toggleTheme } = useTheme();
-
-  // Handle responsive behavior
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024); // lg breakpoint
-    };
-
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+  const { isMobile } = useResponsive();
 
   // Close mobile sidebar when screen becomes larger
   useEffect(() => {
@@ -79,18 +67,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           </div>
 
           <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleTheme}
-              className="text-foreground hover:bg-accent"
-            >
-              {theme === "dark" ? (
-                <Sun className="w-4 h-4" />
-              ) : (
-                <Moon className="w-4 h-4" />
-              )}
-            </Button>
+            <ThemeToggle />
           </div>
         </header>
 
