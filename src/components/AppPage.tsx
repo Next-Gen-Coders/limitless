@@ -1,3 +1,4 @@
+import React from "react";
 import AppLayout from "./AppLayout";
 import MainContent from "./MainContent";
 

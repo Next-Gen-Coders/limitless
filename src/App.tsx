@@ -1,16 +1,28 @@
 import "./App.css";
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import LandingPage from "./components/LandingPage";
 import AppPage from "./components/AppPage";
+import TestPage from "./components/TestPage";
 import { ThemeProvider } from "./contexts/ThemeContext";
 // import { usePrivy } from "@privy-io/react-auth";
 // import AuthComponent from "./components/auth/AuthComponent";
 // import { useState, useEffect } from "react";
 // import type { User } from "@privy-io/react-auth";
 
-function App() {
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
+function App() {
   // interface UserSyncResponse {
   //   success: boolean
   //   user: {
@@ -48,22 +60,22 @@ function App() {
   //   }, [authenticated]);
 
   return (
-    <ThemeProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/app" element={<AppPage />} />
-        </Routes>
-      </Router>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/app" element={<AppPage />} />
+            <Route path="/test" element={<TestPage />} />
+          </Routes>
+        </Router>
+      </ThemeProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   );
 }
 
 export default App;
-
-
-
-
 
 //   return (
 //     <div className="min-h-screen bg-background">
