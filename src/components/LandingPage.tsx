@@ -8,15 +8,17 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-black-100 text-white-100">
       {/* Header */}
-      <header className="border-b border-white-100/10">
+      <header className="border-b border-white-100/10 font-family-zilla">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/logo-white.png" alt="Limitless" className="h-8 w-auto" />
-            <span className="text-xl font-bold">Limitless</span>
+          <div className="flex items-center ">
+            <img src="/logo-white.png" alt="Limitless" className="h-12 w-fit" />
+            <span className="text-xl font-bold font-family-zilla">
+              Limitless
+            </span>
           </div>
           <button
             onClick={handleConnectWallet}
-            className="bg-white-100 hover:bg-white-90 text-black-100 px-6 py-2 rounded-lg transition-colors duration-200"
+            className="bg-white-100 hover:bg-white-90 text-black-100 px-6 py-2 rounded-lg transition-colors duration-200 font-family-zilla"
           >
             Connect Wallet
           </button>
@@ -26,10 +28,10 @@ const LandingPage = () => {
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20">
         <div className="text-center max-w-4xl mx-auto">
-          <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-white-100 to-white-70 bg-clip-text text-transparent">
+          <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-white-100 to-white-70 bg-clip-text text-transparent font-family-zilla">
             {heroContent.title}
           </h1>
-          <h2 className="text-2xl text-white-70 mb-6">
+          <h2 className="text-2xl text-white-70 mb-6 font-family-zilla">
             {heroContent.subtitle}
           </h2>
           <p className="text-lg text-white-60 mb-8 max-w-2xl mx-auto">
@@ -37,7 +39,7 @@ const LandingPage = () => {
           </p>
           <button
             onClick={handleConnectWallet}
-            className="bg-white-100 hover:bg-white-90 text-black-100 px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-white-60/25"
+            className="bg-white-100 hover:bg-white-90 text-black-100 px-8 py-4 rounded-lg text-xl font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-white-60/25 font-family-zilla"
           >
             {heroContent.ctaText}
           </button>
@@ -64,7 +66,9 @@ const LandingPage = () => {
       {/* Features Section */}
       <section className="container mx-auto px-4 py-20">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold mb-4">Why Choose Limitless?</h2>
+          <h2 className="text-4xl font-bold mb-4 font-family-zilla">
+            Why Choose Limitless?
+          </h2>
           <p className="text-white-60 max-w-2xl mx-auto">
             Experience the future of Web3 wallet management with AI-powered
             automation and natural language control.
@@ -78,7 +82,9 @@ const LandingPage = () => {
               className="p-6 rounded-xl bg-white-100/5 border border-white-100/10 hover:border-white-100/20 transition-all duration-200 hover:bg-white-100/10"
             >
               <div className="text-4xl mb-4">{feature.icon}</div>
-              <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
+              <h3 className="text-xl font-semibold mb-3 font-family-zilla">
+                {feature.title}
+              </h3>
               <p className="text-white-60 leading-relaxed">
                 {feature.description}
               </p>
@@ -90,7 +96,7 @@ const LandingPage = () => {
       {/* CTA Section */}
       <section className="container mx-auto px-4 py-20">
         <div className="text-center max-w-3xl mx-auto">
-          <h2 className="text-4xl font-bold mb-6">
+          <h2 className="text-4xl font-bold mb-6 font-family-zilla">
             Ready to Experience the Future?
           </h2>
           <p className="text-white-60 mb-8 text-lg">
