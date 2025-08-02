@@ -2,6 +2,7 @@ import { landingFeatures, heroContent, stats } from "../constants/landing";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useEffect, useRef } from "react";
 import Lenis from "lenis";
+import { useNavigate } from "react-router-dom";
 
 const revealVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -11,6 +12,7 @@ const revealVariants = {
 const LandingPage = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll();
+  const navigate = useNavigate();
 
   const headerBackground = useTransform(
     scrollY,
@@ -25,7 +27,7 @@ const LandingPage = () => {
   );
 
   const handleConnectWallet = () => {
-    console.log("Connect wallet clicked");
+    navigate("/app");
   };
 
   useEffect(() => {
@@ -92,7 +94,7 @@ const LandingPage = () => {
               onClick={handleConnectWallet}
               className="bg-white-100 hover:bg-white-90 text-black-100 px-6 py-2 rounded-lg transition-colors duration-200 font-family-zilla"
             >
-              Connect Wallet
+              Launch App
             </button>
           </div>
         </motion.header>

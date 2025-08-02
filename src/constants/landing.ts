@@ -47,8 +47,8 @@ export const heroContent = {
   title: "Limitless",
   subtitle: "AI-Powered Web3 Wallet Control",
   description:
-    "Connect your existing wallet and let AI handle your transactions. Trade, swap, and manage your crypto assets through natural conversation.",
-  ctaText: "Connect Wallet",
+    "Launch your existing wallet and let AI handle your transactions. Trade, swap, and manage your crypto assets through natural conversation.",
+  ctaText: "Launch App",
 };
 
 export const stats = [
