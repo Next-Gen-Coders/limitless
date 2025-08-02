@@ -33,10 +33,15 @@ const ChatLayout = ({
   return (
     <div className="w-full h-full bg-background flex-1">
       <div
-        className={`max-w-3xl lg:max-w-5xl mx-auto min-h-[calc(100vh-64px)] h-full flex flex-col px-4 ${
+        className={`max-w-3xl lg:max-w-5xl mx-auto min-h-[calc(100vh-64px)] max-h-[calc(100vh-64px)] h-full flex flex-col relative px-4 ${
           showInitialState ? "pt-[16%] md:pt-[8%]" : ""
         }`}
       >
+        <img
+          src="/logo.png"
+          alt="Limitless AI"
+          className="w-full absolute top-0 left-0 dark:invert opacity-[5%] dark:opacity-[2%] blur-[8px] h-fit max-h-[calc(100vh-64px)] object-cover filter grayscale-100"
+        />
         <AnimatePresence>
           {showInitialState && (
             <motion.div
@@ -52,51 +57,7 @@ const ChatLayout = ({
                 Let Limitless do it all for you!
               </p>
 
-              {/* Feature Cards */}
-              <motion.div
-                className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8"
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
-              >
-                <div className="p-4 rounded-xl border border-border/50 bg-background/50 backdrop-blur-sm">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mb-3 mx-auto">
-                    <span className="text-primary text-lg">💰</span>
-                  </div>
-                  <h3 className="font-semibold text-foreground mb-2 text-base">
-                    Portfolio Management
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Track balances, analyze performance, and manage your assets
-                  </p>
-                </div>
 
-                <div className="p-4 rounded-xl border border-border/50 bg-background/50 backdrop-blur-sm">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mb-3 mx-auto">
-                    <span className="text-primary text-lg">🚀</span>
-                  </div>
-                  <h3 className="font-semibold text-foreground mb-2 text-base">
-                    Smart Transactions
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Send tokens, swap assets, and execute trades with AI
-                    assistance
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-xl border border-border/50 bg-background/50 backdrop-blur-sm">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mb-3 mx-auto">
-                    <span className="text-primary text-lg">📊</span>
-                  </div>
-                  <h3 className="font-semibold text-foreground mb-2 text-base">
-                    Market Analysis
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Get insights, trends, and recommendations for your
-                    investments
-                  </p>
-                </div>
-              </motion.div>
 
               {/* Welcome Message */}
               <motion.div
