@@ -2,10 +2,52 @@
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
+
+@theme {
+  --border-width-0.5: 0.5px;
+  --font-family-lexend: "Lexend Deca", sans-serif;
+  --font-family-zilla: "Zilla Slab", serif;
+
+  /* Black shades - solid colors for light mode */
+  --black-03: #fcfcfc;
+  --black-05: #f8f8f8;
+  --black-10: #e6e6e6;
+  --black-15: #d9d9d9;
+  --black-20: #cccccc;
+  --black-30: #b3b3b3;
+  --black-40: #999999;
+  --black-50: #808080;
+  --black-60: #666666;
+  --black-70: #4d4d4d;
+  --black-80: #333333;
+  --black-85: #262626;
+  --black-90: #1a1a1a;
+  --black-95: #0d0d0d;
+  --black-100: #000000;
+
+  /* White shades - solid colors for dark mode */
+  --white-03: #080808;
+  --white-05: #0d0d0d;
+  --white-10: #1a1a1a;
+  --white-15: #262626;
+  --white-20: #333333;
+  --white-30: #4d4d4d;
+  --white-40: #666666;
+  --white-50: #808080;
+  --white-60: #999999;
+  --white-70: #b3b3b3;
+  --white-80: #cccccc;
+  --white-85: #d9d9d9;
+  --white-90: #e6e6e6;
+  --white-95: #f2f2f2;
+  --white-100: #ffffff;
+}
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: var(--font-family-lexend);
   line-height: 1.5;
   font-weight: 400;
+  font-family-zilla: var(--font-family-zilla);
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
@@ -16,6 +58,7 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   --radius: 0.625rem;
+
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -47,60 +90,6 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
 }
 
 @theme inline {
@@ -139,6 +128,42 @@ button:focus-visible {
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Font families */
+
+  /* Black shade colors */
+  --color-black-03: var(--black-03);
+  --color-black-05: var(--black-05);
+  --color-black-10: var(--black-10);
+  --color-black-15: var(--black-15);
+  --color-black-20: var(--black-20);
+  --color-black-30: var(--black-30);
+  --color-black-40: var(--black-40);
+  --color-black-50: var(--black-50);
+  --color-black-60: var(--black-60);
+  --color-black-70: var(--black-70);
+  --color-black-80: var(--black-80);
+  --color-black-85: var(--black-85);
+  --color-black-90: var(--black-90);
+  --color-black-95: var(--black-95);
+  --color-black-100: var(--black-100);
+
+  /* White shade colors */
+  --color-white-03: var(--white-03);
+  --color-white-05: var(--white-05);
+  --color-white-10: var(--white-10);
+  --color-white-15: var(--white-15);
+  --color-white-20: var(--white-20);
+  --color-white-30: var(--white-30);
+  --color-white-40: var(--white-40);
+  --color-white-50: var(--white-50);
+  --color-white-60: var(--white-60);
+  --color-white-70: var(--white-70);
+  --color-white-80: var(--white-80);
+  --color-white-85: var(--white-85);
+  --color-white-90: var(--white-90);
+  --color-white-95: var(--white-95);
+  --color-white-100: var(--white-100);
 }
 
 .dark {
@@ -181,5 +206,10 @@ button:focus-visible {
   }
   body {
     @apply bg-background text-foreground;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  html {
+    transition: background-color 0.3s ease;
   }
 }
