@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getPrivyAccessToken } from "../auth/privyAuth";
 
 const axiosClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/",
@@ -7,11 +8,17 @@ const axiosClient = axios.create({
   },
 });
 
-// Add request interceptor for auth headers etc
-axiosClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+// Add request interceptor for Privy auth headers
+axiosClient.interceptors.request.use(async (config) => {
+  try {
+    // Get fresh Privy access token (auto-refreshes if needed)
+    const token = await getPrivyAccessToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  } catch (error) {
+    console.error("Failed to get access token for request:", error);
+    // Continue with request even if token fetch fails
   }
   return config;
 });
