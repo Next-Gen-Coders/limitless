@@ -3,6 +3,8 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useEffect, useRef } from "react";
 import Lenis from "lenis";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "../contexts/ThemeContext";
+import { Sun, Moon } from "lucide-react";
 
 const revealVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -13,17 +15,14 @@ const LandingPage = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll();
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
 
-  const headerBackground = useTransform(
-    scrollY,
-    [0, 50],
-    ["rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0.8)"]
-  );
+
 
   const backdropBlur = useTransform(
     scrollY,
     [0, 50],
-    ["blur(0px)", "blur(8px)"]
+    ["blur(0px)", "blur(16px)"]
   );
 
   const handleConnectWallet = () => {
@@ -53,14 +52,18 @@ const LandingPage = () => {
 
   return (
     <div
-      className="min-h-screen bg-black-100 text-white-100 relative"
+      className="min-h-screen bg-background text-foreground relative"
       ref={containerRef}
     >
       <div className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0">
         <img
           src="/bg.png"
           alt="Background"
-          className="w-full h-full object-cover opacity-15 grayscale brightness-50"
+          className={`w-full h-full object-cover grayscale transition-opacity duration-300 ${
+            theme === "dark"
+              ? "opacity-15 brightness-50"
+              : "opacity-10 brightness-75"
+          }`}
         />
       </div>
 
@@ -69,7 +72,7 @@ const LandingPage = () => {
         <motion.header
           className=" font-family-zilla sticky top-0 z-10 "
           style={{
-            backgroundColor: headerBackground,
+            // backgroundColor: headerBackground,
             backdropFilter: backdropBlur,
           }}
           initial="hidden"
@@ -82,20 +85,33 @@ const LandingPage = () => {
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
             <div className="flex items-center ">
               <img
-                src="/logo-white.png"
+                src="/logo.png"
                 alt="Limitless"
-                className="h-12 w-fit"
+                className="h-12 w-fit dark:invert"
               />
-              <span className="text-xl font-bold font-family-zilla">
+              <span className="text-xl font-bold font-family-zilla text-foreground">
                 Limitless
               </span>
             </div>
-            <button
-              onClick={handleConnectWallet}
-              className="bg-white-100 hover:bg-white-90 text-black-100 px-6 py-2 rounded-lg transition-colors duration-200 font-family-zilla"
-            >
-              Launch App
-            </button>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-lg transition-colors duration-200 hover:bg-accent"
+                aria-label="Toggle theme"
+              >
+                {theme === "dark" ? (
+                  <Sun className="w-5 h-5 text-foreground" />
+                ) : (
+                  <Moon className="w-5 h-5 text-foreground" />
+                )}
+              </button>
+              <button
+                onClick={handleConnectWallet}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg transition-colors duration-200 font-family-zilla"
+              >
+                Launch App
+              </button>
+            </div>
           </div>
         </motion.header>
 
@@ -110,7 +126,7 @@ const LandingPage = () => {
         >
           <div className="text-center max-w-4xl mx-auto">
             <motion.h1
-              className="text-6xl font-bold mb-6 text-white-100 font-family-zilla"
+              className="text-6xl font-bold mb-6 text-foreground font-family-zilla"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.6, ease: "easeOut" }}
@@ -118,7 +134,7 @@ const LandingPage = () => {
               {heroContent.title}
             </motion.h1>
             <motion.h2
-              className="text-2xl text-white-70 mb-6 font-family-zilla"
+              className="text-2xl text-muted-foreground mb-6 font-family-zilla"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25, duration: 0.6, ease: "easeOut" }}
@@ -126,7 +142,7 @@ const LandingPage = () => {
               {heroContent.subtitle}
             </motion.h2>
             <motion.p
-              className="text-lg text-white-60 mb-8 max-w-2xl mx-auto"
+              className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.6, ease: "easeOut" }}
@@ -135,7 +151,7 @@ const LandingPage = () => {
             </motion.p>
             <motion.button
               onClick={handleConnectWallet}
-              className="bg-white-100 hover:bg-white-90 text-black-100 px-8 py-4 rounded-lg text-xl font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-white-60/25 font-family-zilla"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 rounded-lg text-xl font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-accent/25 font-family-zilla"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.55, duration: 0.6, ease: "easeOut" }}
@@ -158,7 +174,7 @@ const LandingPage = () => {
             {stats.map((stat, index) => (
               <motion.div
                 key={index}
-                className="text-center p-6 rounded-xl bg-white-100/5 backdrop-blur-md border border-white-100/10"
+                className="text-center p-6 rounded-xl bg-card/50 backdrop-blur-md border border-border"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.5 }}
@@ -168,10 +184,10 @@ const LandingPage = () => {
                   ease: "easeOut",
                 }}
               >
-                <div className="text-3xl font-bold text-white-100 mb-2">
+                <div className="text-3xl font-bold text-foreground mb-2">
                   {stat.value}
                 </div>
-                <div className="text-white-60">{stat.label}</div>
+                <div className="text-muted-foreground">{stat.label}</div>
               </motion.div>
             ))}
           </div>
@@ -188,7 +204,7 @@ const LandingPage = () => {
         >
           <div className="text-center mb-16">
             <motion.h2
-              className="text-4xl font-bold mb-4 font-family-zilla"
+              className="text-4xl font-bold mb-4 font-family-zilla text-foreground"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
@@ -197,7 +213,7 @@ const LandingPage = () => {
               Why Choose Limitless?
             </motion.h2>
             <motion.p
-              className="text-white-60 max-w-2xl mx-auto"
+              className="text-muted-foreground max-w-2xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
@@ -212,7 +228,7 @@ const LandingPage = () => {
             {landingFeatures.map((feature, idx) => (
               <motion.div
                 key={feature.id}
-                className="p-6 rounded-xl bg-white-100/5 backdrop-blur-lg border border-white-100/10 hover:border-white-100/20 transition-all duration-200 hover:bg-white-100/10"
+                className="p-6 rounded-xl bg-card/50 backdrop-blur-lg border border-border hover:border-accent transition-all duration-200 hover:bg-accent/10"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.5 }}
@@ -223,10 +239,10 @@ const LandingPage = () => {
                 }}
               >
                 <div className="text-4xl mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-semibold mb-3 font-family-zilla">
+                <h3 className="text-xl font-semibold mb-3 font-family-zilla text-foreground">
                   {feature.title}
                 </h3>
-                <p className="text-white-60 leading-relaxed">
+                <p className="text-muted-foreground leading-relaxed">
                   {feature.description}
                 </p>
               </motion.div>
@@ -245,7 +261,7 @@ const LandingPage = () => {
         >
           <div className="text-center max-w-3xl mx-auto">
             <motion.h2
-              className="text-4xl font-bold mb-6 font-family-zilla"
+              className="text-4xl font-bold mb-6 font-family-zilla text-foreground"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
@@ -254,7 +270,7 @@ const LandingPage = () => {
               Ready to Experience the Future?
             </motion.h2>
             <motion.p
-              className="text-white-60 mb-8 text-lg"
+              className="text-muted-foreground mb-8 text-lg"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
@@ -265,7 +281,7 @@ const LandingPage = () => {
             </motion.p>
             <motion.button
               onClick={handleConnectWallet}
-              className="bg-white-100 hover:bg-white-90 text-black-100 px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-white-60/25"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-accent/25"
               initial={{ opacity: 0, scale: 0.95 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true, amount: 0.3 }}
@@ -278,14 +294,14 @@ const LandingPage = () => {
 
         {/* Footer */}
         <motion.footer
-          className="border-t border-white-100/10 py-8 backdrop-blur-sm"
+          className="border-t border-border py-8 backdrop-blur-[4px]"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
           <div className="container mx-auto px-4 text-center">
-            <p className="text-white-60">
+            <p className="text-muted-foreground">
               © 2024 Limitless. All rights reserved.
             </p>
           </div>
