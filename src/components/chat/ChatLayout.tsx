@@ -31,10 +31,10 @@ const ChatLayout = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div className="w-full h-full p-4 bg-background flex-1">
+    <div className="w-full h-full bg-background flex-1">
       <div
-        className={`max-w-3xl lg:max-w-5xl mx-auto min-h-full h-full flex flex-col ${
-          showInitialState ? "pt-[16%] md:pt-[8%]" : "pt-0"
+        className={`max-w-3xl lg:max-w-5xl mx-auto min-h-[calc(100vh-64px)] h-full flex flex-col px-4 ${
+          showInitialState ? "pt-[16%] md:pt-[8%]" : ""
         }`}
       >
         <AnimatePresence>
@@ -51,6 +51,66 @@ const ChatLayout = ({
               <p className="text-foreground">
                 Let Limitless do it all for you!
               </p>
+
+              {/* Feature Cards */}
+              <motion.div
+                className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
+              >
+                <div className="p-4 rounded-xl border border-border/50 bg-background/50 backdrop-blur-sm">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mb-3 mx-auto">
+                    <span className="text-primary text-lg">💰</span>
+                  </div>
+                  <h3 className="font-semibold text-foreground mb-2 text-base">
+                    Portfolio Management
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Track balances, analyze performance, and manage your assets
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl border border-border/50 bg-background/50 backdrop-blur-sm">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mb-3 mx-auto">
+                    <span className="text-primary text-lg">🚀</span>
+                  </div>
+                  <h3 className="font-semibold text-foreground mb-2 text-base">
+                    Smart Transactions
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Send tokens, swap assets, and execute trades with AI
+                    assistance
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl border border-border/50 bg-background/50 backdrop-blur-sm">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mb-3 mx-auto">
+                    <span className="text-primary text-lg">📊</span>
+                  </div>
+                  <h3 className="font-semibold text-foreground mb-2 text-base">
+                    Market Analysis
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Get insights, trends, and recommendations for your
+                    investments
+                  </p>
+                </div>
+              </motion.div>
+
+              {/* Welcome Message */}
+              <motion.div
+                className="mt-6 p-4 rounded-xl border border-border/30 bg-muted/20 backdrop-blur-sm"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.5, ease: "easeOut", delay: 0.3 }}
+              >
+                <p className="text-sm text-muted-foreground">
+                  👋 Welcome! I'm your AI assistant. Ask me anything about your
+                  Web3 wallet, from checking balances to executing complex
+                  transactions. I'm here to help!
+                </p>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -63,8 +123,8 @@ const ChatLayout = ({
           className={`${
             showInitialState
               ? "flex-grow-0"
-              : "flex-grow mb-6 overflow-y-auto scrollbar-hide"
-          } scroll-smooth relative`}
+              : "flex-grow overflow-y-auto scrollbar-hide"
+          } scroll-smooth relative pt-4`}
         >
           {!showInitialState && (
             <div className="flex flex-col gap-4 md:gap-6">
@@ -120,9 +180,8 @@ const ChatLayout = ({
               <div ref={messagesEndRef} className="h-1" />
             </div>
           )}
+          <PromptInput onSubmit={handlePromptSubmit} chatState={chatState} />
         </motion.div>
-
-        <PromptInput onSubmit={handlePromptSubmit} chatState={chatState} />
       </div>
     </div>
   );
