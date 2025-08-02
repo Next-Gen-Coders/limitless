@@ -138,3 +138,44 @@ export interface ApplicationType {
   request?: RequestType;
 }
 
+// Chat Types (aligned with server schema)
+export interface ChatType {
+  id: string;
+  userId: string;
+  title: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface MessageType {
+  id: string;
+  chatId: string;
+  userId: string;
+  content: string;
+  role: "user" | "assistant";
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface CreateChatRequest {
+  title: string;
+  userId: string;
+}
+
+export interface CreateMessageRequest {
+  content: string;
+  chatId: string;
+  userId: string;
+  role: "user" | "assistant";
+}
+
+export interface UpdateChatRequest {
+  id: string;
+  title: string;
+}
+
+export interface UpdateMessageRequest {
+  id: string;
+  content: string;
+}
+

@@ -1,15 +1,40 @@
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { initializePrivyAuth } from "../lib/auth/privyAuth";
 import { useGetHealth } from "../hooks/services/useHealth";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge-export";
-import { CheckCircle, XCircle, RefreshCw } from "lucide-react";
+import { CheckCircle, XCircle, RefreshCw, Copy, Eye, EyeOff } from "lucide-react";
 
 const AuthenticatedApiExample = () => {
   const { authenticated, getAccessToken, login, logout, user } = usePrivy();
   const { data: healthData, isLoading, error, refetch } = useGetHealth();
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [showFullToken, setShowFullToken] = useState(false);
+  const [isLoadingToken, setIsLoadingToken] = useState(false);
+
+  // Function to fetch and display access token
+  const fetchAndDisplayToken = useCallback(async () => {
+    setIsLoadingToken(true);
+    try {
+      const token = await getAccessToken();
+      if (token) {
+        setAccessToken(token);
+        console.log("🔑 Full Access Token:", token);
+        console.log("🔑 Token Length:", token.length);
+        console.log("🔑 Token Preview:", `${token.slice(0, 20)}...${token.slice(-20)}`);
+      } else {
+        setAccessToken(null);
+        console.log("❌ No access token available");
+      }
+    } catch (error) {
+      console.error("❌ Error fetching access token:", error);
+      setAccessToken(null);
+    } finally {
+      setIsLoadingToken(false);
+    }
+  }, [getAccessToken]);
 
   // Initialize Privy auth for axios interceptor
   useEffect(() => {
@@ -17,11 +42,31 @@ const AuthenticatedApiExample = () => {
       // Wrap getAccessToken to handle null returns
       const wrappedGetAccessToken = async () => {
         const token = await getAccessToken();
+        console.log(token)
         return token; // This can be string | null
       };
       initializePrivyAuth(wrappedGetAccessToken);
     }
   }, [authenticated, getAccessToken]);
+
+  // Auto-fetch token when user becomes authenticated
+  useEffect(() => {
+    if (authenticated && !accessToken) {
+      fetchAndDisplayToken();
+    }
+  }, [authenticated, accessToken, fetchAndDisplayToken]);
+
+  // Function to copy token to clipboard
+  const copyTokenToClipboard = async () => {
+    if (accessToken) {
+      try {
+        await navigator.clipboard.writeText(accessToken);
+        console.log("📋 Token copied to clipboard");
+      } catch (error) {
+        console.error("❌ Failed to copy token:", error);
+      }
+    }
+  };
 
   // Example function showing how to make authenticated API calls
   const makeBackendCall = async () => {
@@ -102,6 +147,85 @@ const AuthenticatedApiExample = () => {
               <p className="font-medium">{user?.linkedAccounts?.length || 0}</p>
             </div>
           </div>
+        </Card>
+
+        {/* Access Token Display */}
+        <Card className="p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Privy Access Token</h2>
+            <div className="flex gap-2">
+              <Button 
+                onClick={fetchAndDisplayToken} 
+                variant="outline" 
+                size="sm"
+                disabled={isLoadingToken}
+              >
+                {isLoadingToken ? (
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                )}
+                Fetch Token
+              </Button>
+              {accessToken && (
+                <>
+                  <Button 
+                    onClick={() => setShowFullToken(!showFullToken)} 
+                    variant="outline" 
+                    size="sm"
+                  >
+                    {showFullToken ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </Button>
+                  <Button 
+                    onClick={copyTokenToClipboard} 
+                    variant="outline" 
+                    size="sm"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+          
+          {accessToken ? (
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Token Length</p>
+                  <p className="font-medium">{accessToken.length} characters</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Token Type</p>
+                  <p className="font-medium">JWT Bearer Token</p>
+                </div>
+              </div>
+              
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">
+                  {showFullToken ? "Full Token" : "Token Preview"}
+                </p>
+                <div className="bg-muted p-3 rounded font-mono text-xs break-all">
+                  {showFullToken 
+                    ? accessToken 
+                    : `${accessToken.slice(0, 50)}...${accessToken.slice(-20)}`
+                  }
+                </div>
+              </div>
+              
+              <div className="text-xs text-muted-foreground">
+                💡 Check the browser console for the full token and additional details
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>Click "Fetch Token" to retrieve and display your Privy access token</p>
+            </div>
+          )}
         </Card>
 
         {/* API Testing */}

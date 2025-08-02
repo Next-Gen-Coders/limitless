@@ -6,6 +6,7 @@ import ThemeToggle from "./ui/theme-toggle";
 import { useResponsive } from "../hooks/useResponsive";
 import { usePrivy } from "@privy-io/react-auth";
 import { logPrivyUserData, logPrivyLogin, logPrivyLogout } from "../utils/privyLogger";
+import { useUserSync } from "../hooks/services";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -14,8 +15,10 @@ interface AppLayoutProps {
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [hasSynced, setHasSynced] = useState(false);
   const { isMobile } = useResponsive();
   const { authenticated, user, login, logout, ready } = usePrivy();
+  const userSyncMutation = useUserSync();
 
   // Close mobile sidebar when screen becomes larger
   useEffect(() => {
@@ -30,6 +33,28 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       logPrivyUserData(user, authenticated, ready);
     }
   }, [authenticated, user, ready]);
+
+  // Sync user to backend when authenticated (only once per user)
+  useEffect(() => {
+    if (authenticated && user && !hasSynced && !userSyncMutation.isPending) {
+      userSyncMutation.mutate(user, {
+        onSuccess: () => {
+          setHasSynced(true);
+        },
+        onError: () => {
+          // Still mark as synced to prevent retry loops, but user sync failed
+          setHasSynced(true);
+        },
+      });
+    }
+  }, [authenticated, user, hasSynced, userSyncMutation]);
+
+  // Reset sync state when user changes or logs out
+  useEffect(() => {
+    if (!authenticated) {
+      setHasSynced(false);
+    }
+  }, [authenticated, user?.id]);
 
   // Track login/logout events specifically
   const [previousAuthState, setPreviousAuthState] = useState(false);
@@ -141,9 +166,17 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               <Button
                 onClick={login}
                 size="sm"
+                disabled={userSyncMutation.isPending}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
-                Login with Privy
+                {userSyncMutation.isPending ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                    Syncing...
+                  </>
+                ) : (
+                  "Login with Privy"
+                )}
               </Button>
             )}
           </div>

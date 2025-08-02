@@ -15,6 +15,7 @@ axiosClient.interceptors.request.use(async (config) => {
     const token = await getPrivyAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log(`Bearer ${token}`)
     }
   } catch (error) {
     console.error("Failed to get access token for request:", error);
