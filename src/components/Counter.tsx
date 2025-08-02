@@ -31,7 +31,7 @@ const Counter: React.FC<CounterProps> = ({ id, title = "Counter" }) => {
   // Zustand store
   const {
     getCounter,
-    isLoading: storeLoading,
+    // isLoading:  storeLoading,
     error: storeError,
   } = useCounterStore();
   const storeValue = getCounter(id);

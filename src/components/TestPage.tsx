@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import AppLayout from "./AppLayout";
 import Counter from "./Counter";
 import { useCounterStore } from "../stores/counterStore";
