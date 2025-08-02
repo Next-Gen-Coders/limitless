@@ -110,7 +110,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               <h3 className="text-sm font-medium text-sidebar-foreground mb-3">
                 Recent Chats
               </h3>
-              <ScrollArea className="h-[300px]">
+              <ScrollArea className="h-full">
                 {recentChats.map((chat) => (
                   <ChatItem key={chat.id} title={chat.title} time={chat.time} />
                 ))}
