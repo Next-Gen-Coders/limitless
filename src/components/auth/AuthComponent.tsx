@@ -16,15 +16,6 @@ interface UserSyncData {
     createdAt: Date
 }
 
-interface DelegationData {
-    id: string
-    user_address: string
-    nonce: string
-    implementation: string
-    signature: string
-    chain_id: number
-    created_at: string
-}
 
 interface UserSyncResponse {
     success: boolean
@@ -37,7 +28,6 @@ interface UserSyncResponse {
         created_at: string
         updated_at: string
     }
-    delegations: DelegationData[]
     message: string
 }
 
@@ -101,7 +91,6 @@ export default function AuthComponent({ onUserAuthenticated }: AuthProps) {
 
             const result: UserSyncResponse = await response.json()
             console.log('User synced to backend:', result)
-            console.log('User delegations:', result.delegations)
 
             // Mark as synced and pass full response to parent component
             setHasSynced(true)
