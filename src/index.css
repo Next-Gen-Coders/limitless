@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@import "./prose.css";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme {
@@ -212,4 +214,14 @@
   html {
     transition: background-color 0.3s ease;
   }
+}
+
+/* Hide scrollbar for webkit browsers */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
