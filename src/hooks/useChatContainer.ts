@@ -1,168 +1,182 @@
 import { v4 as uuidv4 } from "uuid";
-import { useEffect, useCallback } from "react";
-import { useChatStore } from "../store/chatStore";
+import { useCallback, useState, useEffect, useMemo } from "react";
 import { ChatState } from "../enums/chat";
-import type { Message, NewChatType } from "../types/chat";
-import { getDummyResponse } from "../constants/dummyResponses";
+import type { Message } from "../types/api";
+import { useCreateChat } from "./services/useChat";
+import { useCreateMessage } from "./services/useMessage";
+import { useGetChatMessages } from "./services/useMessage";
+import { useUserId } from "../stores/userStore";
+
+// Helper function to generate a short title from user prompt
+const generateChatTitle = (prompt: string): string => {
+  // Remove extra whitespace and limit to 50 characters
+  const cleaned = prompt.trim().replace(/\s+/g, " ");
+  if (cleaned.length <= 50) return cleaned;
+
+  // Try to cut at word boundary near 50 chars
+  const words = cleaned.split(" ");
+  let title = "";
+  for (const word of words) {
+    if (title.length + word.length + 1 <= 47) {
+      title += (title ? " " : "") + word;
+    } else {
+      break;
+    }
+  }
+
+  return title + "...";
+};
 
 export const useChatContainer = (
-  onChatCreated: (newChat: NewChatType) => void,
-  messagesEndRef: React.RefObject<HTMLDivElement | null>
+  messagesEndRef?: React.RefObject<HTMLDivElement | null>
 ) => {
-  // Chat store
-  const {
-    chatState,
-    currentChatId,
-    chatMessages,
-    pendingChatCreation,
-    pendingMessageResponse,
-    addMessageToChat: addMessageToStore,
-    setCurrentChatId,
-    setChatTitle,
-    initializeChat,
-    startChatCreation,
-    completeChatCreation,
-    startMessageResponse,
-    completeMessageResponse,
-    resetToInitial,
-  } = useChatStore();
+  // Local state management (no persistence)
+  const [chatState, setChatState] = useState<ChatState>(ChatState.INITIAL);
+  const [currentMessages, setCurrentMessages] = useState<Message[]>([]);
+  const [isThinking, setIsThinking] = useState(false);
+  const [currentChatId, setCurrentChatId] = useState<string | null>(null);
+
+  // User ID from Zustand store
+  const userId = useUserId();
+
+  // API mutations
+  const createChat = useCreateChat();
+  const createMessage = useCreateMessage();
+
+  // API queries - for loading existing chat messages
+  const { data: chatMessagesResponse, isLoading: isLoadingChatMessages } =
+    useGetChatMessages(currentChatId || "", !!currentChatId);
+
+  // Extract messages from the API response
+  const chatMessages = useMemo(() => {
+    const messages = chatMessagesResponse?.data || [];
+    console.log("chatMessagesResponse:", chatMessagesResponse);
+    console.log("extracted chatMessages:", messages);
+    return messages;
+  }, [chatMessagesResponse]);
 
   // Computed values
-  const currentMessages = currentChatId
-    ? chatMessages[currentChatId] || []
-    : [];
-  const isNewChat = !currentChatId;
-  const showInitialState = isNewChat && chatState === ChatState.INITIAL;
-  const isThinking = pendingChatCreation || pendingMessageResponse;
+  const showInitialState =
+    currentMessages.length === 0 && chatState === ChatState.INITIAL;
 
   // Auto-scroll helper
   const autoScrollToBottom = useCallback(() => {
     setTimeout(() => {
-      if (messagesEndRef.current) {
+      if (messagesEndRef?.current) {
         messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
       }
     }, 100);
   }, [messagesEndRef]);
 
-  // Simulate API delay
-  const simulateApiDelay = (ms: number = 1000) => {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  };
+  // Load existing chat function
+  const loadExistingChat = useCallback((chatId: string) => {
+    console.log("Loading existing chat:", chatId);
+    setCurrentChatId(chatId);
+    setChatState(ChatState.CHATTING);
+    setCurrentMessages([]); // Will be populated by useEffect when chatMessages changes
+    setIsThinking(false); // Ensure we're not in thinking state when loading existing chat
+  }, []);
 
-  // Handle prompt submit - simplified flow with dummy responses
+  // Start new chat function
+  const startNewChat = useCallback(() => {
+    setCurrentChatId(null);
+    setCurrentMessages([]);
+    setChatState(ChatState.INITIAL);
+    setIsThinking(false);
+  }, []);
+
+  // Effect to update current messages when chatMessages changes
+  // Only update from API when we're not in thinking state (to avoid overriding optimistic updates)
+  useEffect(() => {
+    if (chatMessages && currentChatId && !isThinking) {
+      console.log("Updating currentMessages from API:", chatMessages);
+      setCurrentMessages(chatMessages);
+      autoScrollToBottom();
+    }
+  }, [chatMessages, currentChatId, isThinking, autoScrollToBottom]);
+
+  // Handle prompt submit - real API integration with chat creation
   const handlePromptSubmit = useCallback(
     async (message: string) => {
-      const userMessage: Message = {
-        id: `user-${uuidv4()}`,
-        content: message,
-        isAi: false,
-        timestamp: new Date().toISOString(),
-      };
+      if (!userId) {
+        console.error("User not authenticated");
+        return;
+      }
 
-      if (isNewChat) {
-        // Create new chat
-        startChatCreation(message);
-        autoScrollToBottom();
+      // Set thinking state immediately
+      setChatState(ChatState.THINKING);
+      setIsThinking(true);
 
-        // Simulate API delay
-        await simulateApiDelay(2000);
+      try {
+        let chatId = currentChatId;
 
-        const newChatId = `chat-${uuidv4()}`;
-        const aiResponse = getDummyResponse(message);
-        const aiMessage: Message = {
-          id: `ai-${uuidv4()}`,
-          content: aiResponse,
-          isAi: true,
-          timestamp: new Date().toISOString(),
-          isNewMessage: true,
-          responseTime: 2000,
-        };
+        // Create chat if this is the first message
+        if (!chatId) {
+          const chatTitle = generateChatTitle(message);
+          console.log("Creating new chat with title:", chatTitle);
 
-        // Initialize chat and add messages
-        initializeChat(newChatId);
-        addMessageToStore(newChatId, userMessage);
-        addMessageToStore(newChatId, aiMessage);
+          const chatResponse = await createChat.mutateAsync({
+            title: chatTitle,
+          });
 
-        // Set chat title and complete creation
-        setChatTitle(`Chat about ${message.substring(0, 30)}...`);
-        setCurrentChatId(newChatId);
-        completeChatCreation(newChatId);
+          // Extract chat ID from standardized API response
+          chatId = chatResponse.data.id;
+          setCurrentChatId(chatId);
+          console.log("Chat created successfully:", chatResponse);
+        }
 
-        // Notify parent component
-        onChatCreated({
-          id: newChatId,
-          title: `Chat about ${message.substring(0, 30)}...`,
-          userId: "user-1", // Dummy user ID
-          createdAt: new Date().toISOString(),
+        // Now create the message with the chat ID
+        console.log("Creating message in chat:", chatId);
+        const messageResponse = await createMessage.mutateAsync({
+          content: message,
+          chatId: chatId!, // Non-null assertion since we check above
+          role: "user",
         });
 
-        autoScrollToBottom();
-      } else if (currentChatId) {
-        // Add to existing chat
-        addMessageToStore(currentChatId, userMessage);
-        startMessageResponse();
-        autoScrollToBottom();
+        console.log("Message created successfully:", messageResponse);
 
-        // Simulate AI response
-        await simulateApiDelay(1500);
+        // Update local state with the new messages
+        const newMessages: Message[] = [messageResponse.userMessage];
+        if (messageResponse.aiMessage) {
+          newMessages.push(messageResponse.aiMessage);
+        }
 
-        const aiResponse = getDummyResponse(message);
-        const aiMessage: Message = {
-          id: `ai-${uuidv4()}`,
-          content: aiResponse,
-          isAi: true,
-          timestamp: new Date().toISOString(),
-          isNewMessage: true,
-          responseTime: 1500,
+        setCurrentMessages((prev) => [...prev, ...newMessages]);
+        setChatState(ChatState.CHATTING);
+        setIsThinking(false);
+        autoScrollToBottom();
+      } catch (error) {
+        console.error("Failed to send message:", error);
+
+        // Show error message only when there's an actual error
+        const errorMessage: Message = {
+          id: `error-${uuidv4()}`,
+          content:
+            "Sorry, there was an error processing your message. Please try again.",
+          role: "assistant",
+          chatId: currentChatId || "temp-chat-id",
+          userId: userId || "unknown-user",
+          createdAt: new Date().toISOString(),
         };
 
-        addMessageToStore(currentChatId, aiMessage);
-        completeMessageResponse();
+        setCurrentMessages((prev) => [...prev, errorMessage]);
+        setChatState(ChatState.CHATTING);
+        setIsThinking(false);
         autoScrollToBottom();
       }
     },
-    [
-      isNewChat,
-      currentChatId,
-      addMessageToStore,
-      initializeChat,
-      setCurrentChatId,
-      setChatTitle,
-      onChatCreated,
-      autoScrollToBottom,
-      startChatCreation,
-      completeChatCreation,
-      startMessageResponse,
-      completeMessageResponse,
-    ]
+    [userId, currentChatId, createChat, createMessage, autoScrollToBottom]
   );
-
-  // Handle chat state changes when switching chats
-  useEffect(() => {
-    if (isNewChat) {
-      resetToInitial();
-    } else if (currentChatId) {
-      if (currentMessages.length > 0) {
-        // Chat already has messages, set to chatting state
-        useChatStore.getState().setChatState(ChatState.CHATTING);
-      } else {
-        initializeChat(currentChatId);
-      }
-    }
-  }, [
-    currentChatId,
-    isNewChat,
-    currentMessages.length,
-    initializeChat,
-    resetToInitial,
-  ]);
 
   return {
     chatState,
     currentMessages,
     showInitialState,
     isThinking,
-    isLoadingChatMessages: false,
+    isLoadingChatMessages,
     handlePromptSubmit,
+    loadExistingChat,
+    startNewChat,
+    currentChatId,
   };
 };

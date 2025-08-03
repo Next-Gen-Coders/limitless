@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Utility functions and constants for the Limitless application
 
 // Chat related constants
@@ -33,7 +34,6 @@ export const API_CONSTANTS = {
 // Local storage keys
 export const STORAGE_KEYS = {
   THEME: "theme",
-  CHAT_HISTORY: "chat_history",
   USER_PREFERENCES: "user_preferences",
   SESSION_ID: "session_id",
 } as const;
