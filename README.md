@@ -308,7 +308,25 @@ The application uses Privy for authentication. All authenticated API calls autom
 
 ## Development
 
-### Setup
+### Backend Server
+
+**Important**: This frontend application requires a backend API server running on `http://localhost:3000/` to function with real AI responses. If the backend server is not running, the application will automatically fall back to demo mode with dummy responses.
+
+#### Backend Server Setup
+
+1. **Start the backend server** (separate from this frontend)
+2. **Ensure it's running on port 3000** (or update `VITE_API_URL` in your environment)
+3. **Verify the server is accessible** by visiting `http://localhost:3000/health`
+
+#### Demo Mode
+
+When the backend server is not available, the application will:
+- Show a yellow "Demo Mode" banner
+- Use dummy responses for all chat interactions
+- Display helpful error messages
+- Continue to function for testing UI/UX
+
+### Frontend Setup
 
 ```bash
 npm install
@@ -325,4 +343,5 @@ npm run build
 
 ```env
 VITE_API_URL=http://localhost:3000/
+VITE_PRIVY_APP_ID=your-privy-app-id-here
 ```

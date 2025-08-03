@@ -1,25 +1,35 @@
-import { useRef, useCallback } from "react";
+import { useChatStore } from "../store/chatStore";
 import AppLayout from "./AppLayout";
-import ChatContainer, { type ChatContainerRef } from "./chat/ChatContainer";
+import ChatContainer from "./chat/ChatContainer";
 
 const AppPage = () => {
-  const chatContainerRef = useRef<ChatContainerRef>(null);
+  // Get chat store actions
+  const setCurrentChatId = useChatStore((state) => state.setCurrentChatId);
+  const resetToInitial = useChatStore((state) => state.resetToInitial);
 
-  const handleChatSelect = useCallback((chatId: string) => {
-    if (chatContainerRef.current?.loadExistingChat) {
-      chatContainerRef.current.loadExistingChat(chatId);
-    }
-  }, []);
+  const handleChatCreated = (newChat: {
+    id: string;
+    title: string;
+    createdAt: string;
+    userId: string;
+  }) => {
+    console.log("New chat created:", newChat);
+  };
 
-  const handleNewChat = useCallback(() => {
-    if (chatContainerRef.current?.startNewChat) {
-      chatContainerRef.current.startNewChat();
-    }
-  }, []);
+  const handleChatSelect = (chatId: string) => {
+    console.log("Chat selected:", chatId);
+    setCurrentChatId(chatId);
+  };
+
+  const handleNewChat = () => {
+    console.log("New chat requested");
+    setCurrentChatId(null);
+    resetToInitial();
+  };
 
   return (
     <AppLayout onChatSelect={handleChatSelect} onNewChat={handleNewChat}>
-      <ChatContainer ref={chatContainerRef} />
+      <ChatContainer onChatCreated={handleChatCreated} />
     </AppLayout>
   );
 };
