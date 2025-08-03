@@ -7,7 +7,7 @@ import { detectAddresses } from "../../utils/addressDetection";
 import AddressTag from "../ui/AddressTag";
 import type { DetectedAddress } from "../../utils/addressDetection";
 import { CryptoLineChart } from "../ui/CryptoLineChart";
-import { CryptoCandleChart } from "../ui/CryptoCandleChart";
+import CryptoCandleChart from "../ui/CryptoCandleChart";
 import { linechart } from "../../constants/linechart";
 import { candlechart } from "../../constants/candlechart";
 
@@ -64,11 +64,7 @@ const renderContentWithCharts = (content: string) => {
           />
         )}
         {chartData.type === "candle" && (
-          <CryptoCandleChart
-            chartData={chartData.data as any}
-            title="Token Price Candlestick Analysis"
-            description="Price movement with OHLC data"
-          />
+          <CryptoCandleChart data={chartData.data as any} />
         )}
       </div>
     );
@@ -226,14 +222,26 @@ const MarkdownWithAddresses = ({ content }: { content: string }) => {
 const AiMsg = ({
   content,
   isNewMessage = false,
+  isThinking = false,
+  onTypewriterComplete,
 }: {
   content: string;
   isNewMessage?: boolean;
+  isThinking?: boolean;
+  onTypewriterComplete?: () => void;
 }) => {
+  // Only use typewriter for new messages, not for loaded messages
   const { displayText, isComplete } = useTypewriter(
     isNewMessage ? content : "",
     CHAT_CONSTANTS.TYPING_SPEED
   );
+
+  // Call onTypewriterComplete when typewriter finishes
+  useEffect(() => {
+    if (isComplete && onTypewriterComplete) {
+      onTypewriterComplete();
+    }
+  }, [isComplete, onTypewriterComplete]);
 
   return (
     <div className="w-fit">
@@ -245,11 +253,20 @@ const AiMsg = ({
             className="w-10 h-10 rounded-full dark:invert"
           />
         </div>
-        <p className="font-medium text-foreground">Limitless AI</p>
+        <p className="font-medium text-foreground">Limitless</p>
       </div>
 
       <div className="mt-4 sm:ml-14 prose prose-sm max-w-none">
-        {isNewMessage ? (
+        {isThinking ? (
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-100" />
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-200" />
+            </div>
+            <span className="text-muted-foreground">Thinking...</span>
+          </div>
+        ) : isNewMessage ? (
           <div className="relative">
             {renderContentWithCharts(displayText)}
             {!isComplete && (

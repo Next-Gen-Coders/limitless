@@ -1,13 +1,17 @@
-import { useRef, forwardRef, useImperativeHandle } from "react";
+import { useRef } from "react";
 import { useChatContainer } from "../../hooks/useChatContainer";
 import ChatLayout from "./ChatLayout";
 
-export interface ChatContainerRef {
-  loadExistingChat: (chatId: string) => void;
-  startNewChat: () => void;
+interface ChatContainerProps {
+  onChatCreated?: (newChat: {
+    id: string;
+    title: string;
+    createdAt: string;
+    userId: string;
+  }) => void;
 }
 
-const ChatContainer = forwardRef<ChatContainerRef>((_props, ref) => {
+const ChatContainer = ({ onChatCreated = () => {} }: ChatContainerProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Use custom hook for all business logic
@@ -18,15 +22,9 @@ const ChatContainer = forwardRef<ChatContainerRef>((_props, ref) => {
     isThinking,
     isLoadingChatMessages,
     handlePromptSubmit,
-    loadExistingChat,
-    startNewChat,
-  } = useChatContainer(messagesEndRef);
-
-  // Expose functions to parent component
-  useImperativeHandle(ref, () => ({
-    loadExistingChat,
-    startNewChat,
-  }), [loadExistingChat, startNewChat]);
+    apiAvailable,
+    apiError,
+  } = useChatContainer(onChatCreated, messagesEndRef);
 
   return (
     <ChatLayout
@@ -37,10 +35,10 @@ const ChatContainer = forwardRef<ChatContainerRef>((_props, ref) => {
       isLoadingChatMessages={isLoadingChatMessages}
       handlePromptSubmit={handlePromptSubmit}
       showLoadingSpinner={true}
+      apiAvailable={apiAvailable}
+      apiError={apiError}
     />
   );
-});
-
-ChatContainer.displayName = 'ChatContainer';
+};
 
 export default ChatContainer;

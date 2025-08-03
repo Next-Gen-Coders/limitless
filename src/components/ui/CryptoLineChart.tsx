@@ -1,13 +1,7 @@
 "use client";
 
 import { TrendingUp } from "lucide-react";
-import {
-  CartesianGrid,
-  Line,
-  LineChart as RechartsLineChart,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
 
 import {
   Card,
@@ -57,19 +51,18 @@ const transformChartData = (points: ChartPoint[]) => {
   const transformed = points
     .map((point) => ({
       date: formatTimestamp(point.timestamp),
-      value: Number(point.value), // Ensure value is a number
+      value: Number(point.value),
       timestamp: point.timestamp,
     }))
-    .sort((a, b) => a.timestamp - b.timestamp); // Ensure proper ordering
+    .sort((a, b) => a.timestamp - b.timestamp);
 
-  console.log("Transformed data for chart:", transformed);
   return transformed;
 };
 
 const chartConfig = {
   value: {
     label: "Price",
-    color: "#3b82f6", // Use a specific blue color instead of CSS variable
+    color: "var(--chart-1)",
   },
 } satisfies ChartConfig;
 
@@ -80,10 +73,6 @@ export function CryptoLineChart({
 }: CryptoLineChartProps) {
   const transformedData = transformChartData(chartData.points);
 
-  // Debug logging
-  console.log("Original chart data:", chartData.points);
-  console.log("Transformed chart data:", transformedData);
-
   // Calculate trend
   const firstValue = chartData.points[0]?.value || 0;
   const lastValue = chartData.points[chartData.points.length - 1]?.value || 0;
@@ -92,36 +81,28 @@ export function CryptoLineChart({
     firstValue > 0 ? ((lastValue - firstValue) / firstValue) * 100 : 0;
 
   return (
-    <Card className="w-full max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent className="min-h-[300px]">
-        <ChartContainer config={chartConfig} className="w-full h-[300px]">
-          <RechartsLineChart
+      <CardContent>
+        <ChartContainer config={chartConfig}>
+          <LineChart
+            accessibilityLayer
             data={transformedData}
             margin={{
-              left: 20,
-              right: 20,
-              top: 20,
-              bottom: 20,
+              left: 12,
+              right: 12,
             }}
           >
-            <CartesianGrid vertical={false} strokeDasharray="3 3" />
+            <CartesianGrid vertical={false} />
             <XAxis
               dataKey="date"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              fontSize={12}
-            />
-            <YAxis
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              fontSize={12}
-              tickFormatter={(value) => value.toFixed(4)}
+              tickFormatter={(value) => value.slice(0, 3)}
             />
             <ChartTooltip
               cursor={false}
@@ -129,22 +110,12 @@ export function CryptoLineChart({
             />
             <Line
               dataKey="value"
-              type="monotone"
-              stroke="#3b82f6"
-              strokeWidth={3}
-              dot={{ fill: "#3b82f6", strokeWidth: 2, r: 3 }}
-              activeDot={{
-                r: 6,
-                stroke: "#3b82f6",
-                strokeWidth: 2,
-                fill: "#3b82f6",
-              }}
-              connectNulls={true}
-              isAnimationActive={false}
-              strokeLinecap="round"
-              strokeLinejoin="round"
+              type="natural"
+              stroke="var(--color-value)"
+              strokeWidth={2}
+              dot={false}
             />
-          </RechartsLineChart>
+          </LineChart>
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm">

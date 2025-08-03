@@ -1,27 +1,5 @@
-"use client";
-
-import { TrendingUp } from "lucide-react";
-import {
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  ComposedChart,
-} from "recharts";
-
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import type { ChartConfig } from "@/components/ui/chart";
+import { useEffect, useRef } from "react";
+import * as d3 from "d3";
 
 interface CandleData {
   timestamp: number;
@@ -32,281 +10,194 @@ interface CandleData {
   volume: number;
 }
 
-interface CandleChartData {
-  token0: string;
-  token1: string;
-  chainId: number;
-  seconds: number;
+interface ChartData {
+  token0?: string;
+  token1?: string;
+  chainId?: number;
+  seconds?: number;
   candles: CandleData[];
 }
 
-interface CryptoCandleChartProps {
-  chartData: CandleChartData;
-  title?: string;
-  description?: string;
+interface CandlestickChartProps {
+  data?: ChartData;
+  width?: number;
+  height?: number;
 }
 
-// Convert timestamp to readable date
-const formatTimestamp = (timestamp: number) => {
-  const date = new Date(timestamp * 1000);
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-};
+const CandlestickChart = ({
+  data,
+  width = 800,
+  height = 400,
+}: CandlestickChartProps) => {
+  const svgRef = useRef<SVGSVGElement>(null);
 
-// Calculate EMA (Exponential Moving Average)
-const calculateEMA = (data: number[], period: number) => {
-  const k = 2 / (period + 1);
-  let ema = data[0];
-  const emaData = [ema];
+  useEffect(() => {
+    if (!data || !data.candles || data.candles.length === 0) return;
 
-  for (let i = 1; i < data.length; i++) {
-    ema = data[i] * k + ema * (1 - k);
-    emaData.push(ema);
-  }
+    const svg = d3.select(svgRef.current);
+    svg.selectAll("*").remove(); // Clear previous render
 
-  return emaData;
-};
+    const margin = { top: 20, right: 30, bottom: 40, left: 60 };
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
 
-// Transform candle data for recharts
-const transformCandleData = (candles: CandleData[]) => {
-  const closePrices = candles.map((c) => c.close);
-  const ema12 = calculateEMA(closePrices, 12);
-  const ema26 = calculateEMA(closePrices, 26);
+    // Create main group
+    const g = svg
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  return candles
-    .map((candle, index) => ({
-      date: formatTimestamp(candle.timestamp),
-      open: candle.open,
-      high: candle.high,
-      low: candle.low,
-      close: candle.close,
-      volume: candle.volume,
-      timestamp: candle.timestamp,
-      // Calculate if candle is bullish (green) or bearish (red)
-      isBullish: candle.close >= candle.open,
-      // Calculate body height for candlestick
-      bodyHeight: Math.abs(candle.close - candle.open),
-      // Calculate wick positions
-      wickTop: Math.max(candle.open, candle.close),
-      wickBottom: Math.min(candle.open, candle.close),
-      // For simpler rendering, use close price as main value
-      value: candle.close,
-      // Moving averages
-      ema12: ema12[index],
-      ema26: ema26[index],
-    }))
-    .sort((a, b) => a.timestamp - b.timestamp);
-};
+    // Parse data
+    const candles = data.candles.map((d: CandleData) => ({
+      ...d,
+      date: new Date(d.timestamp * 1000),
+    }));
 
-const chartConfig = {
-  close: {
-    label: "Close Price",
-    color: "#3b82f6",
-  },
-  volume: {
-    label: "Volume",
-    color: "#3b82f6",
-  },
-} satisfies ChartConfig;
+    // Scales
+    const xScale = d3
+      .scaleBand()
+      .domain(candles.map((d) => d.timestamp.toString()))
+      .range([0, innerWidth])
+      .padding(0.3);
 
-export function CryptoCandleChart({
-  chartData,
-  title = "Token Price Candlestick Chart",
-  description = "Price movement with OHLC data",
-}: CryptoCandleChartProps) {
-  const transformedData = transformCandleData(chartData.candles);
+    const yScale = d3
+      .scaleLinear()
+      .domain([
+        d3.min(candles, (d) => d.low) || 0,
+        d3.max(candles, (d) => d.high) || 0,
+      ])
+      .nice()
+      .range([innerHeight, 0]);
 
-  // Debug logging
-  console.log("Candle chart data:", chartData);
-  console.log("Transformed candle data:", transformedData);
+    // X Axis
+    const xAxis = d3
+      .axisBottom(xScale)
+      .tickFormat((d) => {
+        const timestamp = parseInt(d);
+        const date = new Date(timestamp * 1000);
+        return d3.timeFormat("%m/%d %H:%M")(date);
+      })
+      .ticks(Math.min(candles.length, 10));
 
-  // Calculate overall trend
-  const firstCandle = chartData.candles[0];
-  const lastCandle = chartData.candles[chartData.candles.length - 1];
-  const trend = lastCandle.close > firstCandle.open ? "up" : "down";
-  const percentageChange =
-    firstCandle.open > 0
-      ? ((lastCandle.close - firstCandle.open) / firstCandle.open) * 100
-      : 0;
+    g.append("g")
+      .attr("transform", `translate(0,${innerHeight})`)
+      .call(xAxis)
+      .selectAll("text")
+      .style("text-anchor", "end")
+      .attr("dx", "-.8em")
+      .attr("dy", ".15em")
+      .attr("transform", "rotate(-45)");
 
-  // Calculate total volume
-  const totalVolume = chartData.candles.reduce(
-    (sum, candle) => sum + candle.volume,
-    0
-  );
+    // Y Axis
+    const yAxis = d3.axisLeft(yScale).ticks(8);
+    g.append("g").call(yAxis);
+
+    // Add grid lines
+    g.selectAll(".grid-line-x")
+      .data(yScale.ticks(8))
+      .enter()
+      .append("line")
+      .attr("class", "grid-line-x")
+      .attr("x1", 0)
+      .attr("x2", innerWidth)
+      .attr("y1", (d) => yScale(d))
+      .attr("y2", (d) => yScale(d))
+      .attr("stroke", "#e0e0e0")
+      .attr("stroke-width", 0.5);
+
+    // Candlesticks
+    const candleGroups = g
+      .selectAll(".candle")
+      .data(candles)
+      .enter()
+      .append("g")
+      .attr("class", "candle")
+      .attr(
+        "transform",
+        (d) => `translate(${xScale(d.timestamp.toString())},0)`
+      );
+
+    // High-Low lines (wicks)
+    candleGroups
+      .append("line")
+      .attr("class", "wick")
+      .attr("x1", xScale.bandwidth() / 2)
+      .attr("x2", xScale.bandwidth() / 2)
+      .attr("y1", (d) => yScale(d.high))
+      .attr("y2", (d) => yScale(d.low))
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1);
+
+    // Candle bodies
+    candleGroups
+      .append("rect")
+      .attr("class", "candle-body")
+      .attr("x", 0)
+      .attr("y", (d) => yScale(Math.max(d.open, d.close)))
+      .attr("width", xScale.bandwidth())
+      .attr("height", (d) => Math.abs(yScale(d.open) - yScale(d.close)) || 1)
+      .attr("fill", (d) => (d.close >= d.open ? "#4caf50" : "#f44336"))
+      .attr("stroke", (d) => (d.close >= d.open ? "#2e7d32" : "#c62828"))
+      .attr("stroke-width", 1);
+
+    // Tooltip
+    const tooltip = d3
+      .select("body")
+      .append("div")
+      .attr("class", "tooltip")
+      .style("position", "absolute")
+      .style("visibility", "hidden")
+      .style("background", "rgba(0, 0, 0, 0.8)")
+      .style("color", "white")
+      .style("padding", "10px")
+      .style("border-radius", "5px")
+      .style("font-size", "12px")
+      .style("pointer-events", "none")
+      .style("z-index", "1000");
+
+    candleGroups
+      .on("mouseover", (_event, d) => {
+        tooltip.style("visibility", "visible").html(
+          `
+            <strong>Date:</strong> ${d.date.toLocaleString()}<br/>
+            <strong>Open:</strong> $${d.open.toFixed(2)}<br/>
+            <strong>High:</strong> $${d.high.toFixed(2)}<br/>
+            <strong>Low:</strong> $${d.low.toFixed(2)}<br/>
+            <strong>Close:</strong> $${d.close.toFixed(2)}<br/>
+            <strong>Volume:</strong> ${d.volume.toLocaleString()}
+            `
+        );
+      })
+      .on("mousemove", (event) => {
+        tooltip
+          .style("top", event.pageY - 10 + "px")
+          .style("left", event.pageX + 10 + "px");
+      })
+      .on("mouseout", () => {
+        tooltip.style("visibility", "hidden");
+      });
+
+    // Cleanup tooltip on unmount
+    return () => {
+      d3.select("body").selectAll(".tooltip").remove();
+    };
+  }, [data, width, height]);
 
   return (
-    <Card className="w-full max-w-2xl">
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent className="min-h-[300px] relative">
-        {/* Information Panel */}
-        <div className="absolute top-4 left-4 z-10 bg-background/90 backdrop-blur-sm rounded-lg p-3 text-xs space-y-1">
-          <div className="font-medium">
-            O: {lastCandle.open.toFixed(4)} H: {lastCandle.high.toFixed(4)} L:{" "}
-            {lastCandle.low.toFixed(4)} C: {lastCandle.close.toFixed(4)}
-          </div>
-          <div className="text-green-500">
-            +{(lastCandle.close - lastCandle.open).toFixed(4)} (+
-            {(
-              ((lastCandle.close - lastCandle.open) / lastCandle.open) *
-              100
-            ).toFixed(2)}
-            %)
-          </div>
-          <div className="text-blue-500">
-            EMA (12) {transformedData[transformedData.length - 1].ema12.toFixed(4)}
-          </div>
-          <div className="text-red-500">
-            EMA (26) {transformedData[transformedData.length - 1].ema26.toFixed(4)}
-          </div>
-        </div>
-
-        <ChartContainer config={chartConfig} className="w-full h-[300px]">
-          <ComposedChart
-            data={transformedData}
-            margin={{
-              left: 20,
-              right: 20,
-              top: 20,
-              bottom: 20,
-            }}
-          >
-            <CartesianGrid vertical={false} strokeDasharray="3 3" />
-            <XAxis
-              dataKey="date"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              fontSize={12}
-            />
-            <YAxis
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              fontSize={12}
-              tickFormatter={(value) => value.toFixed(4)}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent hideLabel />}
-            />
-
-            {/* Custom candlestick rendering */}
-            {transformedData.map((candle, index) => {
-              const x = index * 30 + 15; // Position each candle
-              const candleWidth = 8;
-              // const bodyHeight = Math.max(candle.bodyHeight * 1000000, 2);
-              const isBullish = candle.isBullish;
-
-              // Calculate Y positions (invert for chart coordinates)
-              const highY = 250 - candle.high * 1000000;
-              const lowY = 250 - candle.low * 1000000;
-              const openY = 250 - candle.open * 1000000;
-              const closeY = 250 - candle.close * 1000000;
-              const bodyTopY = Math.min(openY, closeY);
-              const bodyBottomY = Math.max(openY, closeY);
-
-              return (
-                <g key={index}>
-                  {/* Wick (high to low) */}
-                  <line
-                    x1={x}
-                    y1={highY}
-                    x2={x}
-                    y2={lowY}
-                    stroke={isBullish ? "#10b981" : "#ef4444"}
-                    strokeWidth={1}
-                  />
-
-                  {/* Body */}
-                  <rect
-                    x={x - candleWidth / 2}
-                    y={bodyTopY}
-                    width={candleWidth}
-                    height={Math.max(bodyBottomY - bodyTopY, 1)}
-                    fill={isBullish ? "#10b981" : "#ef4444"}
-                    stroke={isBullish ? "#10b981" : "#ef4444"}
-                    strokeWidth={1}
-                  />
-                </g>
-              );
-            })}
-
-            {/* Volume bars at the bottom */}
-            {transformedData.map((candle, index) => {
-              const x = index * 30 + 15;
-              const volumeHeight = (candle.volume / 5000) * 50; // Scale volume to fit
-
-              return (
-                <rect
-                  key={`volume-${index}`}
-                  x={x - 4}
-                  y={300 - volumeHeight}
-                  width={8}
-                  height={volumeHeight}
-                  fill={candle.isBullish ? "#10b981" : "#ef4444"}
-                  opacity={0.6}
-                />
-              );
-            })}
-
-            {/* Moving Average Lines */}
-            {transformedData.map((candle, index) => {
-              if (index === 0) return null;
-
-              const x1 = (index - 1) * 30 + 15;
-              const x2 = index * 30 + 15;
-              const y1_12 = 250 - transformedData[index - 1].ema12 * 1000000;
-              const y2_12 = 250 - candle.ema12 * 1000000;
-              const y1_26 = 250 - transformedData[index - 1].ema26 * 1000000;
-              const y2_26 = 250 - candle.ema26 * 1000000;
-
-              return (
-                <g key={`ma-${index}`}>
-                  {/* EMA 12 */}
-                  <line
-                    x1={x1}
-                    y1={y1_12}
-                    x2={x2}
-                    y2={y2_12}
-                    stroke="#3b82f6"
-                    strokeWidth={2}
-                  />
-                  {/* EMA 26 */}
-                  <line
-                    x1={x1}
-                    y1={y1_26}
-                    x2={x2}
-                    y2={y2_26}
-                    stroke="#ef4444"
-                    strokeWidth={2}
-                  />
-                </g>
-              );
-            })}
-          </ComposedChart>
-        </ChartContainer>
-      </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 leading-none font-medium">
-          Trending {trend} by {Math.abs(percentageChange).toFixed(2)}%
-          <TrendingUp
-            className={`h-4 w-4 ${trend === "down" ? "rotate-180" : ""}`}
-          />
-        </div>
-        <div className="text-muted-foreground leading-none">
-          {chartData.token0} / {chartData.token1} on Chain ID{" "}
-          {chartData.chainId}
-        </div>
-        <div className="text-muted-foreground leading-none">
-          Total Volume: {totalVolume.toFixed(2)}
-        </div>
-      </CardFooter>
-    </Card>
+    <div className="candlestick-chart">
+      <h3 style={{ textAlign: "center", marginBottom: "20px" }}>
+        {data?.token0 && data?.token1
+          ? `${data.token0}/${data.token1}`
+          : "Price Chart"}{" "}
+        - Candlestick Chart
+      </h3>
+      <svg
+        ref={svgRef}
+        width={width}
+        height={height}
+        style={{ border: "1px solid #ddd", borderRadius: "5px" }}
+      />
+    </div>
   );
-}
+};
+
+export default CandlestickChart;

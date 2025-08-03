@@ -19,6 +19,7 @@ import MobileOverlay from "./ui/mobile-overlay";
 import { navigationItems } from "../constants/sidebar";
 import { useGetUserChats } from "../hooks/services/useChat";
 import { useUserId } from "../stores/userStore";
+import { useChatStore } from "../store/chatStore";
 import type { Chat } from "../types/api";
 
 interface SidebarProps {
@@ -45,24 +46,37 @@ const Sidebar: React.FC<SidebarProps> = ({
   // Get current user ID from Zustand store
   const userId = useUserId();
 
+  // Get current chat ID from chat store
+  const currentChatId = useChatStore((state) => state.currentChatId);
+  const setCurrentChatId = useChatStore((state) => state.setCurrentChatId);
+
   // Fetch user chats
   const {
     data: userChatsResponse,
     isLoading: isLoadingChats,
-    error: chatsError
+    error: chatsError,
   } = useGetUserChats(userId || "", !!userId);
 
-  // Extract the chats array from the API response
-  const userChats = React.useMemo(() => userChatsResponse?.data || [], [userChatsResponse]);
+  // Extract and sort the chats array from the API response
+  const userChats = React.useMemo(() => {
+    const chats = userChatsResponse?.data || [];
+    // Sort by updatedAt in descending order (newest first)
+    return chats.sort((a: Chat, b: Chat) => {
+      const dateA = new Date(a.updatedAt || a.createdAt);
+      const dateB = new Date(b.updatedAt || b.createdAt);
+      return dateB.getTime() - dateA.getTime();
+    });
+  }, [userChatsResponse]);
 
   // Debug log to understand the structure
   React.useEffect(() => {
     if (userChatsResponse) {
       console.log("userChatsResponse:", userChatsResponse);
-      console.log("extracted userChats:", userChats);
+      console.log("sorted userChats:", userChats);
       console.log("userChats length:", userChats.length);
+      console.log("currentChatId:", currentChatId);
     }
-  }, [userChatsResponse, userChats]);
+  }, [userChatsResponse, userChats, currentChatId]);
 
   // Filter chats based on search query
   const filteredChats = userChats.filter((chat: Chat) =>
@@ -70,6 +84,9 @@ const Sidebar: React.FC<SidebarProps> = ({
   );
 
   const handleNewChat = () => {
+    // Clear current chat to start a new one
+    setCurrentChatId(null);
+
     if (onNewChat) {
       onNewChat();
     }
@@ -79,9 +96,16 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const handleChatClick = (chatId: string) => {
+    console.log("Chat clicked:", chatId);
+
+    // Update the chat store
+    setCurrentChatId(chatId);
+
+    // Call the parent handler if provided
     if (onChatSelect) {
       onChatSelect(chatId);
     }
+
     if (isMobile) {
       onClose();
     }
@@ -89,11 +113,12 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const sidebarContent = (
     <div
-      className={`bg-sidebar border-r border-sidebar-border transition-all duration-300 ${isCollapsed ? "w-16" : "w-64"
-        } flex flex-col h-full`}
+      className={`bg-sidebar border-r border-sidebar-border transition-all duration-300 ${
+        isCollapsed ? "w-16" : "w-64"
+      } flex flex-col h-full max-h-screen`}
     >
       {/* Header */}
-      <div className="p-4 border-b border-sidebar-border">
+      <div className="p-4 border-b border-sidebar-border flex-shrink-0">
         <div className="flex items-center justify-between">
           {!isCollapsed && <Logo size="md" />}
           <Button
@@ -114,11 +139,12 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Navigation */}
-      <div className="p-4 space-y-2">
+      <div className="p-4 space-y-2 flex-shrink-0">
         <Button
           onClick={handleNewChat}
-          className={`w-full dark:bg-white dark:text-black text-white bg-black hover:bg-sidebar-primary/90 ${isCollapsed ? "justify-center" : "justify-start"
-            }`}
+          className={`w-full dark:bg-white dark:text-black text-white bg-black hover:bg-sidebar-primary/90 ${
+            isCollapsed ? "justify-center" : "justify-start"
+          }`}
         >
           <Plus size={16} />
           {!isCollapsed && "New Chat"}
@@ -136,13 +162,13 @@ const Sidebar: React.FC<SidebarProps> = ({
         ))}
       </div>
 
-      <Separator className="bg-sidebar-border" />
+      <Separator className="bg-sidebar-border flex-shrink-0" />
 
       {/* Search and Chats */}
-      <div className="flex-1 p-4">
+      <div className="flex-1 flex flex-col min-h-0 p-4">
         {!isCollapsed && (
           <>
-            <div className="relative mb-4">
+            <div className="relative mb-4 flex-shrink-0">
               <Search
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
                 size={16}
@@ -156,38 +182,42 @@ const Sidebar: React.FC<SidebarProps> = ({
               />
             </div>
 
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium text-sidebar-foreground mb-3">
+            <div className="flex-1 flex flex-col min-h-0">
+              <h3 className="text-sm font-medium text-sidebar-foreground mb-3 flex-shrink-0">
                 Your Chats
               </h3>
 
               {isLoadingChats ? (
-                <div className="text-muted-foreground text-sm text-center py-4">
+                <div className="text-muted-foreground text-sm text-center py-4 flex-shrink-0">
                   Loading chats...
                 </div>
               ) : chatsError ? (
-                <div className="text-red-500 text-sm text-center py-4">
+                <div className="text-red-500 text-sm text-center py-4 flex-shrink-0">
                   Error loading chats: {chatsError.message}
                 </div>
               ) : filteredChats.length > 0 ? (
-                <div className="space-y-1 max-h-64 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto scrollbar-hide space-y-1">
                   {filteredChats.map((chat: Chat) => (
                     <button
                       key={chat.id}
                       onClick={() => handleChatClick(chat.id)}
-                      className="w-full text-left p-2 rounded-md hover:bg-sidebar-accent/50 transition-colors group"
+                      className={`w-full text-left p-2 rounded-md transition-colors group flex-shrink-0 ${
+                        currentChatId === chat.id
+                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                          : "hover:bg-sidebar-accent/50 text-sidebar-foreground"
+                      }`}
                     >
-                      <div className="text-sm text-sidebar-foreground truncate">
-                        {chat.title}
-                      </div>
+                      <div className="text-sm truncate">{chat.title}</div>
                       <div className="text-xs text-muted-foreground mt-1">
-                        {new Date(chat.updatedAt).toLocaleDateString()}
+                        {new Date(
+                          chat.updatedAt || chat.createdAt
+                        ).toLocaleDateString()}
                       </div>
                     </button>
                   ))}
                 </div>
               ) : (
-                <div className="text-muted-foreground text-sm text-center py-8">
+                <div className="text-muted-foreground text-sm text-center py-8 flex-shrink-0">
                   {searchQuery ? "No chats found" : "No chats yet"}
                 </div>
               )}
@@ -196,10 +226,10 @@ const Sidebar: React.FC<SidebarProps> = ({
         )}
       </div>
 
-      <Separator className="bg-sidebar-border" />
+      <Separator className="bg-sidebar-border flex-shrink-0" />
 
       {/* Footer */}
-      <div className="p-4">
+      <div className="p-4 flex-shrink-0">
         {!isCollapsed ? (
           <div className="space-y-3">
             <div className="flex items-center space-x-2">
@@ -268,8 +298,9 @@ const Sidebar: React.FC<SidebarProps> = ({
         <MobileOverlay isOpen={isOpen} onClose={onClose} />
 
         <div
-          className={`fixed top-0 left-0 h-full z-50 lg:hidden transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"
-            }`}
+          className={`fixed top-0 left-0 h-full z-50 lg:hidden transform transition-transform duration-300 ease-in-out ${
+            isOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
         >
           {sidebarContent}
         </div>

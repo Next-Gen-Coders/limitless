@@ -5,7 +5,11 @@ import { Button } from "./ui/button";
 import ThemeToggle from "./ui/theme-toggle";
 import { useResponsive } from "../hooks/useResponsive";
 import { usePrivy } from "@privy-io/react-auth";
-import { logPrivyUserData, logPrivyLogin, logPrivyLogout } from "../utils/privyLogger";
+import {
+  logPrivyUserData,
+  logPrivyLogin,
+  logPrivyLogout,
+} from "../utils/privyLogger";
 import { useUserSync } from "../hooks/services";
 import { initializePrivyAuth } from "../lib/auth/privyAuth";
 import { useUserStore } from "../stores/userStore";
@@ -16,14 +20,28 @@ interface AppLayoutProps {
   onNewChat?: () => void;
 }
 
-const AppLayout: React.FC<AppLayoutProps> = ({ children, onChatSelect, onNewChat }) => {
+const AppLayout: React.FC<AppLayoutProps> = ({
+  children,
+  onChatSelect,
+  onNewChat,
+}) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [hasSynced, setHasSynced] = useState(false);
   const { isMobile } = useResponsive();
-  const { authenticated, user, login, logout, ready, getAccessToken } = usePrivy();
+  const { authenticated, user, login, logout, ready, getAccessToken } =
+    usePrivy();
   const userSyncMutation = useUserSync();
   const clearUser = useUserStore((state) => state.clearUser);
+
+  // Show loading state while Privy is initializing
+  if (!ready) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   // Close mobile sidebar when screen becomes larger
   useEffect(() => {
@@ -94,17 +112,18 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, onChatSelect, onNewChat
   const getDisplayInfo = () => {
     if (user?.wallet?.address) {
       return {
-        type: 'wallet',
+        type: "wallet",
         value: formatAddress(user.wallet.address),
-        fullValue: user.wallet.address
+        fullValue: user.wallet.address,
       };
     } else if (user?.email?.address) {
       return {
-        type: 'email',
-        value: user.email.address.length > 20
-          ? `${user.email.address.slice(0, 17)}...`
-          : user.email.address,
-        fullValue: user.email.address
+        type: "email",
+        value:
+          user.email.address.length > 20
+            ? `${user.email.address.slice(0, 17)}...`
+            : user.email.address,
+        fullValue: user.email.address,
       };
     }
     return null;
@@ -119,7 +138,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, onChatSelect, onNewChat
           onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           isMobile={false}
           isOpen={false}
-          onClose={() => { }}
+          onClose={() => {}}
           onChatSelect={onChatSelect}
           onNewChat={onNewChat}
         />
@@ -129,7 +148,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, onChatSelect, onNewChat
       {isMobile && (
         <Sidebar
           isCollapsed={false}
-          onToggle={() => { }}
+          onToggle={() => {}}
           isMobile={true}
           isOpen={isMobileSidebarOpen}
           onClose={() => setIsMobileSidebarOpen(false)}
@@ -167,7 +186,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, onChatSelect, onNewChat
               <div className="flex items-center space-x-2">
                 <div className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-accent/50 border">
                   <Wallet size={16} className="text-muted-foreground" />
-                  <span className="text-sm font-medium" title={getDisplayInfo()?.fullValue}>
+                  <span
+                    className="text-sm font-medium"
+                    title={getDisplayInfo()?.fullValue}
+                  >
                     {getDisplayInfo()?.value}
                   </span>
                 </div>

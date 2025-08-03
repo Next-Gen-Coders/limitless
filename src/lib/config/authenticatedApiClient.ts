@@ -37,12 +37,15 @@ authenticatedApiClient.interceptors.response.use(
   (error) => {
     // Handle errors (401, 403 etc)
     if (error.response?.status === 401) {
-      // Handle unauthorized - redirect to login
-      console.warn("🔒 Unauthorized request detected, redirecting to login");
+      // Handle unauthorized - but don't redirect immediately
+      console.warn("🔒 Unauthorized request detected");
       // Remove any stored tokens (if any)
       localStorage.removeItem("token");
-      // Redirect to home page where user can login
-      window.location.href = "/";
+      // Only redirect if we're not already on the home page
+      if (window.location.pathname !== "/") {
+        console.warn("Redirecting to login page");
+        window.location.href = "/";
+      }
     } else if (error.response?.status === 403) {
       console.warn("🚫 Forbidden: User lacks permissions for this resource");
     } else if (error.response?.status >= 500) {
