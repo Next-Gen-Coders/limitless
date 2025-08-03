@@ -1,67 +1,81 @@
 export const landingFeatures = [
   {
     id: 1,
-    title: "AI-Powered Wallet Control",
+    title: "Intent-Based Blockchain Interface",
     description:
-      "Connect your existing wallet and let our AI handle transactions on your behalf with complete security and transparency.",
-    icon: "🤖",
+      "Simply describe what you want to do in natural language - swap tokens, check balances, or analyze portfolios - and Limitless executes it instantly.",
+    icon: "🎯",
   },
   {
     id: 2,
-    title: "Multi-Wallet Support",
+    title: "13 Integrated 1inch APIs",
     description:
-      "Seamlessly connect MetaMask, WalletConnect, and other popular wallets to our platform.",
+      "Access the complete suite of 1inch services including swaps, fusion trading, portfolio analysis, and transaction debugging.",
     icon: "🔗",
   },
   {
     id: 3,
-    title: "1inch Integration",
+    title: "Cross-Chain Operations",
     description:
-      "Access advanced DeFi features through 1inch API integration for optimal trading and swapping.",
-    icon: "📊",
+      "Perform actions across Ethereum, Polygon, Arbitrum, Base, and other major networks from a single interface.",
+    icon: "🌐",
   },
   {
     id: 4,
-    title: "Natural Language Commands",
+    title: "Multilingual Support",
     description:
-      "Control your wallet using simple chat commands. No more complex transaction interfaces.",
+      "Interact with DeFi in your native language. Our AI understands commands in multiple languages seamlessly.",
     icon: "💬",
   },
   {
     id: 5,
-    title: "Secure Authorization",
+    title: "Advanced Analytics & Debugging",
     description:
-      "Complete control over what AI can do with your wallet. Revoke permissions anytime.",
-    icon: "🔒",
+      "Get detailed token analysis, portfolio insights, transaction traces, and gas optimization - all through simple conversations.",
+    icon: "📊",
   },
   {
     id: 6,
-    title: "Real-time Monitoring",
+    title: "Real-Time Market Data",
     description:
-      "Track all AI-initiated transactions in real-time with detailed logs and notifications.",
-    icon: "📱",
+      "Access live token prices, gas fees, chart data, and market trends across all supported networks instantly.",
+    icon: "📈",
   },
 ];
 
 export const heroContent = {
   title: "Limitless",
-  subtitle: "AI-Powered Web3 Wallet Control",
+  subtitle: "Talk to the Blockchain",
   description:
-    "Launch your existing wallet and let AI handle your transactions. Trade, swap, and manage your crypto assets through natural conversation.",
-  ctaText: "Launch App",
+    "Transform natural language into blockchain actions. Swap tokens, analyze portfolios, and manage DeFi across multiple chains - just by describing what you want to do.",
+  ctaText: "Start Trading",
 };
 
 export const stats = [
   {
-    label: "Supported Wallets",
-    value: "10+",
+    label: "1inch APIs Integrated",
+    value: "13",
   },
   {
-    label: "DeFi Protocols",
-    value: "50+",
+    label: "Supported Networks",
+    value: "8+",
   },
   {
-    label: "Security Score",
-    value: "99.9%",
+    label: "Languages Supported",
+    value: "Multi",
+  },
+  {
+    label: "Built in Hours",
+    value: "48",
+  },
+  // New additions:
+  {
+    label: "Transaction Types",
+    value: "15+",
+  },
+  {
+    label: "ETHGlobal Hackathon",
+    value: "2024",
   },
 ];
+
