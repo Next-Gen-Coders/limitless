@@ -1,34 +1,19 @@
 import { useMutation } from "@tanstack/react-query";
-import type { User } from '@privy-io/react-auth';
-import axiosClient from "../../lib/config/axiosClient";
-
-// Types for user sync
-export interface UserSyncData {
-  privyId: string;
-  email?: string;
-  walletAddress?: string;
-  linkedAccounts: unknown[];
-  createdAt: Date;
-}
-
-export interface UserSyncResponse {
-  success: boolean;
-  user: {
-    id: string;
-    privy_id: string;
-    email?: string;
-    wallet_address?: string;
-    linked_accounts?: unknown[];
-    created_at: string;
-    updated_at: string;
-  };
-  message: string;
-}
+import type { User } from "@privy-io/react-auth";
+import publicApiClient from "../../lib/config/publicApiClient";
+import type { UserSyncRequest, UserSyncResponse } from "../../types/api";
+import { API_ENDPOINTS } from "../../types/api";
+import { useUserStore } from "../../stores/userStore";
 
 export const useUserSync = () => {
+  const { updateUserFromSyncResponse, setLoading, setError } = useUserStore();
+
   return useMutation<UserSyncResponse, Error, User>({
     mutationFn: async (userData: User) => {
-      const syncData: UserSyncData = {
+      setLoading(true);
+      setError(null);
+
+      const syncData: UserSyncRequest = {
         privyId: userData.id,
         email: userData.email?.address,
         walletAddress: userData.wallet?.address,
@@ -36,16 +21,27 @@ export const useUserSync = () => {
         createdAt: userData.createdAt,
       };
 
-      const response = await axiosClient.post('/user/sync', syncData);
+      const response = await publicApiClient.post(
+        API_ENDPOINTS.USER_SYNC,
+        syncData
+      );
       return response.data;
     },
     onSuccess: (data, userData) => {
-      console.log('User synced to backend:', data);
-      console.log('Synced user data:', userData);
+      console.log("User synced to backend:", data);
+      console.log("Synced user data:", userData);
+
+      // Update the Zustand store with sync response
+      updateUserFromSyncResponse(data);
+      setLoading(false);
     },
     onError: (error, userData) => {
-      console.error('Error syncing user to backend:', error);
-      console.error('Failed to sync user:', userData.id);
+      console.error("Error syncing user to backend:", error);
+      console.error("Failed to sync user:", userData.id);
+
+      // Update the Zustand store with error
+      setError(error.message || "Failed to sync user");
+      setLoading(false);
     },
   });
 };
