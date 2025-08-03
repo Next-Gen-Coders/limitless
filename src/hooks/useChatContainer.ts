@@ -6,6 +6,8 @@ import { useCreateChat } from "./services/useChat";
 import { useCreateMessage } from "./services/useMessage";
 import { useGetChatMessages } from "./services/useMessage";
 import { useUserId } from "../stores/userStore";
+import { linechart } from "../constants/linechart";
+import { candlechart } from "../constants/candlechart";
 
 // Helper function to generate a short title from user prompt
 const generateChatTitle = (prompt: string): string => {
@@ -100,6 +102,67 @@ export const useChatContainer = (
     async (message: string) => {
       if (!userId) {
         console.error("User not authenticated");
+        return;
+      }
+
+      // Special case: If user types "line", render chart directly without API call
+      // This provides instant chart visualization for demonstration purposes
+      if (message.toLowerCase().trim() === "line") {
+        // Create user message
+        const userMessage: Message = {
+          id: `user-${uuidv4()}`,
+          content: message,
+          role: "user",
+          chatId: currentChatId || "temp-chat-id",
+          userId: userId,
+          createdAt: new Date().toISOString(),
+        };
+
+        // Create AI message with chart
+        const aiMessage: Message = {
+          id: `ai-${uuidv4()}`,
+          content: linechart.content, // This contains the @linechart.ts reference
+          role: "assistant",
+          chatId: currentChatId || "temp-chat-id",
+          userId: userId,
+          createdAt: new Date().toISOString(),
+        };
+
+        // Add messages to state
+        setCurrentMessages((prev) => [...prev, userMessage, aiMessage]);
+        setChatState(ChatState.CHATTING);
+        setIsThinking(false);
+        autoScrollToBottom();
+        return;
+      }
+
+      // Special case: If user types "candle", render candle chart directly without API call
+      if (message.toLowerCase().trim() === "candle") {
+        // Create user message
+        const userMessage: Message = {
+          id: `user-${uuidv4()}`,
+          content: message,
+          role: "user",
+          chatId: currentChatId || "temp-chat-id",
+          userId: userId,
+          createdAt: new Date().toISOString(),
+        };
+
+        // Create AI message with chart
+        const aiMessage: Message = {
+          id: `ai-${uuidv4()}`,
+          content: candlechart.content, // This contains the @candlechart.ts reference
+          role: "assistant",
+          chatId: currentChatId || "temp-chat-id",
+          userId: userId,
+          createdAt: new Date().toISOString(),
+        };
+
+        // Add messages to state
+        setCurrentMessages((prev) => [...prev, userMessage, aiMessage]);
+        setChatState(ChatState.CHATTING);
+        setIsThinking(false);
+        autoScrollToBottom();
         return;
       }
 

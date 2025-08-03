@@ -33,7 +33,7 @@ const ChatLayout = ({
   return (
     <div className="w-full h-full bg-background flex-1">
       <div
-        className={`max-w-3xl lg:max-w-5xl mx-auto min-h-[calc(100vh-64px)] max-h-[calc(100vh-64px)] h-full flex flex-col relative px-4 ${showInitialState ? "pt-[16%] md:pt-[8%]" : ""
+        className={`max-w-3xl lg:max-w-5xl mx-auto min-h-[calc(100vh-64px)] h-full flex flex-col relative px-4 ${showInitialState ? "pt-[16%] md:pt-[8%]" : ""
           }`}
       >
         <img

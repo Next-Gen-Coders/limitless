@@ -6,6 +6,76 @@ import { CHAT_CONSTANTS } from "../../lib/helper";
 import { detectAddresses } from "../../utils/addressDetection";
 import AddressTag from "../ui/AddressTag";
 import type { DetectedAddress } from "../../utils/addressDetection";
+import { CryptoLineChart } from "../ui/CryptoLineChart";
+import { CryptoCandleChart } from "../ui/CryptoCandleChart";
+import { linechart } from "../../constants/linechart";
+import { candlechart } from "../../constants/candlechart";
+
+// Function to extract chart data from content
+const extractChartData = (content: string) => {
+  try {
+    // Look for line chart data in the content
+    const lineChartMatch = content.match(/@linechart\.ts/);
+    if (lineChartMatch) {
+      return { type: "line", data: linechart.chart };
+    }
+
+    // Look for candle chart data in the content
+    const candleChartMatch = content.match(/@candlechart\.ts/);
+    if (candleChartMatch) {
+      return {
+        type: "candle",
+        data: {
+          token0: candlechart.token0,
+          token1: candlechart.token1,
+          chainId: candlechart.chainId,
+          seconds: candlechart.seconds,
+          candles: candlechart.candles,
+        },
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error extracting chart data:", error);
+    return null;
+  }
+};
+
+// Function to render content with charts
+const renderContentWithCharts = (content: string) => {
+  const chartData = extractChartData(content);
+
+  if (chartData) {
+    // Remove chart references from the content
+    const textContent = content
+      .replace(/@linechart\.ts/g, "")
+      .replace(/@candlechart\.ts/g, "")
+      .trim();
+
+    return (
+      <div className="space-y-4">
+        {textContent && <MarkdownWithAddresses content={textContent} />}
+        {chartData.type === "line" && (
+          <CryptoLineChart
+            chartData={chartData.data as any}
+            title="Token Price Analysis"
+            description="Price movement over the selected period"
+          />
+        )}
+        {chartData.type === "candle" && (
+          <CryptoCandleChart
+            chartData={chartData.data as any}
+            title="Token Price Candlestick Analysis"
+            description="Price movement with OHLC data"
+          />
+        )}
+      </div>
+    );
+  }
+
+  return <MarkdownWithAddresses content={content} />;
+};
 
 const useTypewriter = (text: string, speed: number = 50) => {
   const [displayText, setDisplayText] = useState("");
@@ -45,7 +115,7 @@ const MarkdownWithAddresses = ({ content }: { content: string }) => {
   const components = {
     // Custom text renderer that detects addresses
     text: ({ children, ...props }: any) => {
-      if (typeof children !== 'string') {
+      if (typeof children !== "string") {
         return <span {...props}>{children}</span>;
       }
 
@@ -85,14 +155,28 @@ const MarkdownWithAddresses = ({ content }: { content: string }) => {
     },
     // Handle code blocks that might contain addresses
     code: ({ children, ...props }: any) => {
-      if (typeof children !== 'string') {
-        return <code {...props} className="bg-muted px-1 py-0.5 rounded text-sm font-mono">{children}</code>;
+      if (typeof children !== "string") {
+        return (
+          <code
+            {...props}
+            className="bg-muted px-1 py-0.5 rounded text-sm font-mono"
+          >
+            {children}
+          </code>
+        );
       }
 
       const addresses = detectAddresses(children);
 
       if (addresses.length === 0) {
-        return <code {...props} className="bg-muted px-1 py-0.5 rounded text-sm font-mono">{children}</code>;
+        return (
+          <code
+            {...props}
+            className="bg-muted px-1 py-0.5 rounded text-sm font-mono"
+          >
+            {children}
+          </code>
+        );
       }
 
       const parts: React.ReactNode[] = [];
@@ -122,18 +206,18 @@ const MarkdownWithAddresses = ({ content }: { content: string }) => {
       }
 
       return (
-        <code {...props} className="bg-muted px-1 py-0.5 rounded text-sm font-mono">
+        <code
+          {...props}
+          className="bg-muted px-1 py-0.5 rounded text-sm font-mono"
+        >
           {parts}
         </code>
       );
-    }
+    },
   };
 
   return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      components={components}
-    >
+    <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
       {content}
     </ReactMarkdown>
   );
@@ -167,13 +251,13 @@ const AiMsg = ({
       <div className="mt-4 sm:ml-14 prose prose-sm max-w-none">
         {isNewMessage ? (
           <div className="relative">
-            <MarkdownWithAddresses content={displayText} />
+            {renderContentWithCharts(displayText)}
             {!isComplete && (
               <span className="inline-block w-2 h-5 bg-blue-500 ml-1 animate-pulse" />
             )}
           </div>
         ) : (
-          <MarkdownWithAddresses content={content} />
+          renderContentWithCharts(content)
         )}
       </div>
     </div>

@@ -31,6 +31,8 @@ const PromptInput = memo(
       "Show my portfolio balance",
       "Send 0.1 ETH to wallet",
       "Analyze token performance",
+      "line",
+      "candle",
       "Clear chat history",
     ]).current;
 
