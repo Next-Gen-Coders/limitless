@@ -40,7 +40,7 @@ const ChatLayout = ({
         <img
           src="/logo.png"
           alt="Limitless AI"
-          className="w-full absolute top-0 left-0 dark:invert opacity-[5%] dark:opacity-[2%] blur-[8px] h-fit max-h-[calc(100vh-64px)] object-cover filter grayscale-100"
+          className="w-full absolute top-0 left-0 dark:invert opacity-[5%] dark:opacity-[1%] blur-[8px] h-fit max-h-[calc(100vh-64px)] object-cover filter grayscale-100"
         />
         <AnimatePresence>
           {showInitialState && (
