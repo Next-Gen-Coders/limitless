@@ -222,10 +222,13 @@ const MarkdownWithAddresses = ({ content }: { content: string }) => {
 const AiMsg = ({
   content,
   isNewMessage = false,
+  isThinking = false,
 }: {
   content: string;
   isNewMessage?: boolean;
+  isThinking?: boolean;
 }) => {
+  // Only use typewriter for new messages, not for loaded messages
   const { displayText, isComplete } = useTypewriter(
     isNewMessage ? content : "",
     CHAT_CONSTANTS.TYPING_SPEED
@@ -245,7 +248,16 @@ const AiMsg = ({
       </div>
 
       <div className="mt-4 sm:ml-14 prose prose-sm max-w-none">
-        {isNewMessage ? (
+        {isThinking ? (
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-100" />
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-200" />
+            </div>
+            <span className="text-muted-foreground">Thinking...</span>
+          </div>
+        ) : isNewMessage ? (
           <div className="relative">
             {renderContentWithCharts(displayText)}
             {!isComplete && (

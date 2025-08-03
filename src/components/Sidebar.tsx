@@ -49,11 +49,14 @@ const Sidebar: React.FC<SidebarProps> = ({
   const {
     data: userChatsResponse,
     isLoading: isLoadingChats,
-    error: chatsError
+    error: chatsError,
   } = useGetUserChats(userId || "", !!userId);
 
   // Extract the chats array from the API response
-  const userChats = React.useMemo(() => userChatsResponse?.data || [], [userChatsResponse]);
+  const userChats = React.useMemo(
+    () => userChatsResponse?.data || [],
+    [userChatsResponse]
+  );
 
   // Debug log to understand the structure
   React.useEffect(() => {
@@ -89,11 +92,12 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const sidebarContent = (
     <div
-      className={`bg-sidebar border-r border-sidebar-border transition-all duration-300 ${isCollapsed ? "w-16" : "w-64"
-        } flex flex-col h-full`}
+      className={`bg-sidebar border-r border-sidebar-border transition-all duration-300 ${
+        isCollapsed ? "w-16" : "w-64"
+      } flex flex-col h-full max-h-screen`}
     >
       {/* Header */}
-      <div className="p-4 border-b border-sidebar-border">
+      <div className="p-4 border-b border-sidebar-border flex-shrink-0">
         <div className="flex items-center justify-between">
           {!isCollapsed && <Logo size="md" />}
           <Button
@@ -114,11 +118,12 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Navigation */}
-      <div className="p-4 space-y-2">
+      <div className="p-4 space-y-2 flex-shrink-0">
         <Button
           onClick={handleNewChat}
-          className={`w-full dark:bg-white dark:text-black text-white bg-black hover:bg-sidebar-primary/90 ${isCollapsed ? "justify-center" : "justify-start"
-            }`}
+          className={`w-full dark:bg-white dark:text-black text-white bg-black hover:bg-sidebar-primary/90 ${
+            isCollapsed ? "justify-center" : "justify-start"
+          }`}
         >
           <Plus size={16} />
           {!isCollapsed && "New Chat"}
@@ -136,13 +141,13 @@ const Sidebar: React.FC<SidebarProps> = ({
         ))}
       </div>
 
-      <Separator className="bg-sidebar-border" />
+      <Separator className="bg-sidebar-border flex-shrink-0" />
 
       {/* Search and Chats */}
-      <div className="flex-1 p-4">
+      <div className="flex-1 flex flex-col min-h-0 p-4">
         {!isCollapsed && (
           <>
-            <div className="relative mb-4">
+            <div className="relative mb-4 flex-shrink-0">
               <Search
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
                 size={16}
@@ -156,26 +161,26 @@ const Sidebar: React.FC<SidebarProps> = ({
               />
             </div>
 
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium text-sidebar-foreground mb-3">
+            <div className="flex-1 flex flex-col min-h-0">
+              <h3 className="text-sm font-medium text-sidebar-foreground mb-3 flex-shrink-0">
                 Your Chats
               </h3>
 
               {isLoadingChats ? (
-                <div className="text-muted-foreground text-sm text-center py-4">
+                <div className="text-muted-foreground text-sm text-center py-4 flex-shrink-0">
                   Loading chats...
                 </div>
               ) : chatsError ? (
-                <div className="text-red-500 text-sm text-center py-4">
+                <div className="text-red-500 text-sm text-center py-4 flex-shrink-0">
                   Error loading chats: {chatsError.message}
                 </div>
               ) : filteredChats.length > 0 ? (
-                <div className="space-y-1 h-full overflow-y-auto scrollbar-hide">
+                <div className="flex-1 overflow-y-auto scrollbar-hide space-y-1">
                   {filteredChats.map((chat: Chat) => (
                     <button
                       key={chat.id}
                       onClick={() => handleChatClick(chat.id)}
-                      className="w-full text-left p-2 rounded-md hover:bg-sidebar-accent/50 transition-colors group"
+                      className="w-full text-left p-2 rounded-md hover:bg-sidebar-accent/50 transition-colors group flex-shrink-0"
                     >
                       <div className="text-sm text-sidebar-foreground truncate">
                         {chat.title}
@@ -187,7 +192,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   ))}
                 </div>
               ) : (
-                <div className="text-muted-foreground text-sm text-center py-8">
+                <div className="text-muted-foreground text-sm text-center py-8 flex-shrink-0">
                   {searchQuery ? "No chats found" : "No chats yet"}
                 </div>
               )}
@@ -196,10 +201,10 @@ const Sidebar: React.FC<SidebarProps> = ({
         )}
       </div>
 
-      <Separator className="bg-sidebar-border" />
+      <Separator className="bg-sidebar-border flex-shrink-0" />
 
       {/* Footer */}
-      <div className="p-4">
+      <div className="p-4 flex-shrink-0">
         {!isCollapsed ? (
           <div className="space-y-3">
             <div className="flex items-center space-x-2">
@@ -268,8 +273,9 @@ const Sidebar: React.FC<SidebarProps> = ({
         <MobileOverlay isOpen={isOpen} onClose={onClose} />
 
         <div
-          className={`fixed top-0 left-0 h-full z-50 lg:hidden transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"
-            }`}
+          className={`fixed top-0 left-0 h-full z-50 lg:hidden transform transition-transform duration-300 ease-in-out ${
+            isOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
         >
           {sidebarContent}
         </div>
