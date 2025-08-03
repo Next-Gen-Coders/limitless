@@ -12,17 +12,20 @@ const authenticatedApiClient = axios.create({
 // Add request interceptor for Privy auth headers
 authenticatedApiClient.interceptors.request.use(async (config) => {
   try {
+    console.log("🔍 DEBUG: About to get Privy access token for:", config.url);
+    
     // Get fresh Privy access token (auto-refreshes if needed)
     const token = await getPrivyAccessToken();
+    
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      // Only log in development
-      if (import.meta.env.MODE === "development") {
-        console.log("🔑 Privy token attached to request");
-      }
+      console.log("🔑 SUCCESS: Privy token attached to request for:", config.url);
+      console.log("🔑 Token starts with:", token.substring(0, 20) + "...");
+    } else {
+      console.error("❌ ERROR: No token received from getPrivyAccessToken for:", config.url);
     }
   } catch (error) {
-    console.error("Failed to get access token for request:", error);
+    console.error("❌ FAILED to get access token for request:", config.url, error);
     // Continue with request even if token fetch fails
   }
   return config;

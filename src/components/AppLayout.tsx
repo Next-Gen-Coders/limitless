@@ -41,7 +41,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, onChatSelect, onNewChat
 
   // Initialize Privy auth service for axios interceptor
   useEffect(() => {
+    console.log("🔍 DEBUG: AppLayout auth effect - ready:", ready, "authenticated:", authenticated, "getAccessToken:", !!getAccessToken);
     if (ready && authenticated && getAccessToken) {
+      console.log("🔧 DEBUG: Calling initializePrivyAuth from AppLayout");
       initializePrivyAuth(getAccessToken);
     }
   }, [ready, authenticated, getAccessToken]);
