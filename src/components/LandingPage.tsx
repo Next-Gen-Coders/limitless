@@ -5,6 +5,7 @@ import Lenis from "lenis";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../contexts/ThemeContext";
 import { Sun, Moon } from "lucide-react";
+import { usePrivy } from "@privy-io/react-auth";
 
 const revealVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -16,6 +17,7 @@ const LandingPage = () => {
   const { scrollY } = useScroll();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
+  const { authenticated, ready, login } = usePrivy();
 
   const backdropBlur = useTransform(
     scrollY,
@@ -23,9 +25,33 @@ const LandingPage = () => {
     ["blur(0px)", "blur(16px)"]
   );
 
-  const handleConnectWallet = () => {
-    navigate("/app");
+  const handleConnectWallet = async () => {
+    if (!ready) {
+      console.log("Privy not ready yet");
+      return;
+    }
+
+    if (authenticated) {
+      // User is already authenticated, navigate to app
+      navigate("/app");
+    } else {
+      // User needs to authenticate first
+      try {
+        await login();
+        // After successful login, navigate to app
+        navigate("/app");
+      } catch (error) {
+        console.error("Login failed:", error);
+      }
+    }
   };
+
+  // Auto-navigate to app if user is already authenticated
+  useEffect(() => {
+    if (ready && authenticated) {
+      navigate("/app");
+    }
+  }, [ready, authenticated, navigate]);
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -47,6 +73,15 @@ const LandingPage = () => {
       lenis.destroy();
     };
   }, []);
+
+  // Show loading state while Privy is initializing
+  if (!ready) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -107,7 +142,7 @@ const LandingPage = () => {
                 onClick={handleConnectWallet}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg transition-colors duration-200 font-family-zilla"
               >
-                Launch App
+                {authenticated ? "Launch App" : "Connect Wallet"}
               </button>
             </div>
           </div>
@@ -154,7 +189,7 @@ const LandingPage = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.55, duration: 0.6, ease: "easeOut" }}
             >
-              {heroContent.ctaText}
+              {authenticated ? heroContent.ctaText : "Connect Wallet to Start"}
             </motion.button>
           </div>
         </motion.section>
@@ -278,7 +313,7 @@ const LandingPage = () => {
               viewport={{ once: true, amount: 0.3 }}
               transition={{ delay: 0.3, duration: 0.6, ease: "easeOut" }}
             >
-              Get Started Now
+              {authenticated ? "Get Started Now" : "Connect Wallet to Start"}
             </motion.button>
           </div>
         </motion.section>
