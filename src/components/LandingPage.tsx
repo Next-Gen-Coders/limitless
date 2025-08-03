@@ -17,8 +17,6 @@ const LandingPage = () => {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
 
-
-
   const backdropBlur = useTransform(
     scrollY,
     [0, 50],
@@ -205,18 +203,14 @@ const LandingPage = () => {
           <div className="text-center mb-16">
             <motion.h2
               className="text-4xl font-bold mb-4 font-family-zilla text-foreground"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
+              variants={revealVariants}
               transition={{ duration: 0.6, ease: "easeOut" }}
             >
               Why Choose Limitless?
             </motion.h2>
             <motion.p
               className="text-muted-foreground max-w-2xl mx-auto"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
+              variants={revealVariants}
               transition={{ delay: 0.15, duration: 0.6, ease: "easeOut" }}
             >
               Experience the future of Web3 wallet management with AI-powered
@@ -229,11 +223,8 @@ const LandingPage = () => {
               <motion.div
                 key={feature.id}
                 className="p-6 rounded-xl bg-card/50 backdrop-blur-lg border border-border hover:border-accent transition-all duration-200 hover:bg-accent/10"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.5 }}
                 transition={{
-                  delay: idx * 0.15 + 0.3,
+                  delay: idx * 0.1,
                   duration: 0.5,
                   ease: "easeOut",
                 }}
