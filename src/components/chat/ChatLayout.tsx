@@ -3,7 +3,7 @@ import UserMsg from "./UserMsg";
 import PromptInput from "./PromptInput";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRef } from "react";
-import type { Message } from "../../types/chat";
+import type { Message } from "../../types/api";
 import { ChatState } from "../../enums/chat";
 
 interface ChatLayoutProps {
@@ -33,9 +33,8 @@ const ChatLayout = ({
   return (
     <div className="w-full h-full bg-background flex-1">
       <div
-        className={`max-w-3xl lg:max-w-5xl mx-auto min-h-[calc(100vh-64px)] max-h-[calc(100vh-64px)] h-full flex flex-col relative px-4 ${
-          showInitialState ? "pt-[16%] md:pt-[8%]" : ""
-        }`}
+        className={`max-w-3xl lg:max-w-5xl mx-auto min-h-[calc(100vh-64px)] max-h-[calc(100vh-64px)] h-full flex flex-col relative px-4 ${showInitialState ? "pt-[16%] md:pt-[8%]" : ""
+          }`}
       >
         <img
           src="/logo.png"
@@ -81,11 +80,10 @@ const ChatLayout = ({
           initial={{ height: "0", opacity: 0 }}
           animate={{ height: showInitialState ? "0" : "100%", opacity: 1 }}
           transition={{ duration: 0.2, ease: "easeInOut" }}
-          className={`${
-            showInitialState
-              ? "flex-grow-0"
-              : "flex-grow overflow-y-auto scrollbar-hide"
-          } scroll-smooth relative pt-4`}
+          className={`${showInitialState
+            ? "flex-grow-0"
+            : "flex-grow  scrollbar-hide"
+            } scroll-smooth relative pt-4`}
         >
           {!showInitialState && (
             <div className="flex flex-col gap-4 md:gap-6">
@@ -101,11 +99,8 @@ const ChatLayout = ({
               {/* Messages */}
               {currentMessages.map((message) => (
                 <div key={message.id}>
-                  {message.isAi ? (
-                    <AiMsg
-                      content={message.content}
-                      isNewMessage={message.isNewMessage || false}
-                    />
+                  {message.role === "assistant" ? (
+                    <AiMsg content={message.content} />
                   ) : (
                     <UserMsg message={message.content} />
                   )}

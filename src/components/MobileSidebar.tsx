@@ -37,25 +37,13 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose }) => {
               <span className="text-lg">+</span>
               <span>New Chat</span>
             </button>
-
-            <button className="w-full bg-gray-800 text-white py-3 px-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-gray-700 transition-colors">
-              <span className="text-lg">💬</span>
-              <span>Saved Chats</span>
-            </button>
           </div>
 
-          {/* Chats section */}
+          {/* Chat info section */}
           <div className="flex-1">
-            <h3 className="text-white font-medium mb-3">Chats</h3>
-            <div className="relative mb-4">
-              <input
-                type="text"
-                placeholder="Q Search"
-                className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg border border-gray-700 focus:outline-none focus:border-blue-500"
-              />
-            </div>
+            <h3 className="text-white font-medium mb-3">Current Session</h3>
             <div className="text-gray-400 text-sm text-center py-8">
-              No chats yet. Start a conversation!
+              Chat messages are not saved between sessions
             </div>
           </div>
 

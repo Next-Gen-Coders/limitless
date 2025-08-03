@@ -1,13 +1,13 @@
-import { useRef } from "react";
-import type { NewChatType } from "../../types/chat";
+import { useRef, forwardRef, useImperativeHandle } from "react";
 import { useChatContainer } from "../../hooks/useChatContainer";
 import ChatLayout from "./ChatLayout";
 
-interface ChatContainerProps {
-  onChatCreated?: (newChat: NewChatType) => void;
+export interface ChatContainerRef {
+  loadExistingChat: (chatId: string) => void;
+  startNewChat: () => void;
 }
 
-const ChatContainer = ({ onChatCreated = () => {} }: ChatContainerProps) => {
+const ChatContainer = forwardRef<ChatContainerRef>((_props, ref) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Use custom hook for all business logic
@@ -18,7 +18,15 @@ const ChatContainer = ({ onChatCreated = () => {} }: ChatContainerProps) => {
     isThinking,
     isLoadingChatMessages,
     handlePromptSubmit,
-  } = useChatContainer(onChatCreated, messagesEndRef);
+    loadExistingChat,
+    startNewChat,
+  } = useChatContainer(messagesEndRef);
+
+  // Expose functions to parent component
+  useImperativeHandle(ref, () => ({
+    loadExistingChat,
+    startNewChat,
+  }), [loadExistingChat, startNewChat]);
 
   return (
     <ChatLayout
@@ -31,6 +39,8 @@ const ChatContainer = ({ onChatCreated = () => {} }: ChatContainerProps) => {
       showLoadingSpinner={true}
     />
   );
-};
+});
+
+ChatContainer.displayName = 'ChatContainer';
 
 export default ChatContainer;

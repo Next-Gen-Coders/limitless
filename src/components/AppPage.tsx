@@ -1,15 +1,25 @@
+import { useRef, useCallback } from "react";
 import AppLayout from "./AppLayout";
-import ChatContainer from "./chat/ChatContainer";
-import type { NewChatType } from "../types/chat";
+import ChatContainer, { type ChatContainerRef } from "./chat/ChatContainer";
 
 const AppPage = () => {
-  const handleChatCreated = (newChat: NewChatType) => {
-    console.log("New chat created:", newChat);
-  };
+  const chatContainerRef = useRef<ChatContainerRef>(null);
+
+  const handleChatSelect = useCallback((chatId: string) => {
+    if (chatContainerRef.current?.loadExistingChat) {
+      chatContainerRef.current.loadExistingChat(chatId);
+    }
+  }, []);
+
+  const handleNewChat = useCallback(() => {
+    if (chatContainerRef.current?.startNewChat) {
+      chatContainerRef.current.startNewChat();
+    }
+  }, []);
 
   return (
-    <AppLayout>
-      <ChatContainer onChatCreated={handleChatCreated} />
+    <AppLayout onChatSelect={handleChatSelect} onNewChat={handleNewChat}>
+      <ChatContainer ref={chatContainerRef} />
     </AppLayout>
   );
 };

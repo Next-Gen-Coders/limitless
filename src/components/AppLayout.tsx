@@ -7,18 +7,23 @@ import { useResponsive } from "../hooks/useResponsive";
 import { usePrivy } from "@privy-io/react-auth";
 import { logPrivyUserData, logPrivyLogin, logPrivyLogout } from "../utils/privyLogger";
 import { useUserSync } from "../hooks/services";
+import { initializePrivyAuth } from "../lib/auth/privyAuth";
+import { useUserStore } from "../stores/userStore";
 
 interface AppLayoutProps {
   children: React.ReactNode;
+  onChatSelect?: (chatId: string) => void;
+  onNewChat?: () => void;
 }
 
-const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
+const AppLayout: React.FC<AppLayoutProps> = ({ children, onChatSelect, onNewChat }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [hasSynced, setHasSynced] = useState(false);
   const { isMobile } = useResponsive();
-  const { authenticated, user, login, logout, ready } = usePrivy();
+  const { authenticated, user, login, logout, ready, getAccessToken } = usePrivy();
   const userSyncMutation = useUserSync();
+  const clearUser = useUserStore((state) => state.clearUser);
 
   // Close mobile sidebar when screen becomes larger
   useEffect(() => {
@@ -33,6 +38,13 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       logPrivyUserData(user, authenticated, ready);
     }
   }, [authenticated, user, ready]);
+
+  // Initialize Privy auth service for axios interceptor
+  useEffect(() => {
+    if (ready && authenticated && getAccessToken) {
+      initializePrivyAuth(getAccessToken);
+    }
+  }, [ready, authenticated, getAccessToken]);
 
   // Sync user to backend when authenticated (only once per user)
   useEffect(() => {
@@ -58,17 +70,18 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
   // Track login/logout events specifically
   const [previousAuthState, setPreviousAuthState] = useState(false);
-  
+
   useEffect(() => {
     if (ready && authenticated !== previousAuthState) {
       if (authenticated && user) {
         logPrivyLogin(user);
       } else if (!authenticated && previousAuthState) {
         logPrivyLogout();
+        clearUser(); // Clear Zustand store when user logs out
       }
       setPreviousAuthState(authenticated);
     }
-  }, [authenticated, user, ready, previousAuthState]);
+  }, [authenticated, user, ready, previousAuthState, clearUser]);
 
   // Function to format wallet address
   const formatAddress = (address: string) => {
@@ -86,8 +99,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     } else if (user?.email?.address) {
       return {
         type: 'email',
-        value: user.email.address.length > 20 
-          ? `${user.email.address.slice(0, 17)}...` 
+        value: user.email.address.length > 20
+          ? `${user.email.address.slice(0, 17)}...`
           : user.email.address,
         fullValue: user.email.address
       };
@@ -104,7 +117,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           isMobile={false}
           isOpen={false}
-          onClose={() => {}}
+          onClose={() => { }}
+          onChatSelect={onChatSelect}
+          onNewChat={onNewChat}
         />
       )}
 
@@ -112,10 +127,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       {isMobile && (
         <Sidebar
           isCollapsed={false}
-          onToggle={() => {}}
+          onToggle={() => { }}
           isMobile={true}
           isOpen={isMobileSidebarOpen}
           onClose={() => setIsMobileSidebarOpen(false)}
+          onChatSelect={onChatSelect}
+          onNewChat={onNewChat}
         />
       )}
 
@@ -142,7 +159,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
           <div className="flex items-center space-x-4">
             <ThemeToggle />
-            
+
             {/* Authentication Section */}
             {authenticated ? (
               <div className="flex items-center space-x-2">

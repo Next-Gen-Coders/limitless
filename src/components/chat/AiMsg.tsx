@@ -3,6 +3,9 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useState, useEffect } from "react";
 import { CHAT_CONSTANTS } from "../../lib/helper";
+import { detectAddresses } from "../../utils/addressDetection";
+import AddressTag from "../ui/AddressTag";
+import type { DetectedAddress } from "../../utils/addressDetection";
 
 const useTypewriter = (text: string, speed: number = 50) => {
   const [displayText, setDisplayText] = useState("");
@@ -37,6 +40,105 @@ const useTypewriter = (text: string, speed: number = 50) => {
   return { displayText, isComplete };
 };
 
+// Custom renderer for markdown that handles addresses
+const MarkdownWithAddresses = ({ content }: { content: string }) => {
+  const components = {
+    // Custom text renderer that detects addresses
+    text: ({ children, ...props }: any) => {
+      if (typeof children !== 'string') {
+        return <span {...props}>{children}</span>;
+      }
+
+      const addresses = detectAddresses(children);
+
+      if (addresses.length === 0) {
+        return <span {...props}>{children}</span>;
+      }
+
+      const parts: React.ReactNode[] = [];
+      let lastIndex = 0;
+
+      addresses.forEach((address: DetectedAddress, index: number) => {
+        // Add text before the address
+        if (address.startIndex > lastIndex) {
+          parts.push(children.substring(lastIndex, address.startIndex));
+        }
+
+        // Add the address tag
+        parts.push(
+          <AddressTag
+            key={`address-${index}`}
+            address={address.value}
+            className="mx-1"
+          />
+        );
+
+        lastIndex = address.endIndex;
+      });
+
+      // Add remaining text after the last address
+      if (lastIndex < children.length) {
+        parts.push(children.substring(lastIndex));
+      }
+
+      return <span {...props}>{parts}</span>;
+    },
+    // Handle code blocks that might contain addresses
+    code: ({ children, ...props }: any) => {
+      if (typeof children !== 'string') {
+        return <code {...props} className="bg-muted px-1 py-0.5 rounded text-sm font-mono">{children}</code>;
+      }
+
+      const addresses = detectAddresses(children);
+
+      if (addresses.length === 0) {
+        return <code {...props} className="bg-muted px-1 py-0.5 rounded text-sm font-mono">{children}</code>;
+      }
+
+      const parts: React.ReactNode[] = [];
+      let lastIndex = 0;
+
+      addresses.forEach((address: DetectedAddress, index: number) => {
+        // Add text before the address
+        if (address.startIndex > lastIndex) {
+          parts.push(children.substring(lastIndex, address.startIndex));
+        }
+
+        // Add the address tag
+        parts.push(
+          <AddressTag
+            key={`address-${index}`}
+            address={address.value}
+            className="mx-1"
+          />
+        );
+
+        lastIndex = address.endIndex;
+      });
+
+      // Add remaining text after the last address
+      if (lastIndex < children.length) {
+        parts.push(children.substring(lastIndex));
+      }
+
+      return (
+        <code {...props} className="bg-muted px-1 py-0.5 rounded text-sm font-mono">
+          {parts}
+        </code>
+      );
+    }
+  };
+
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={components}
+    >
+      {content}
+    </ReactMarkdown>
+  );
+};
+
 const AiMsg = ({
   content,
   isNewMessage = false,
@@ -65,15 +167,13 @@ const AiMsg = ({
       <div className="mt-4 sm:ml-14 prose prose-sm max-w-none">
         {isNewMessage ? (
           <div className="relative">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {displayText}
-            </ReactMarkdown>
+            <MarkdownWithAddresses content={displayText} />
             {!isComplete && (
               <span className="inline-block w-2 h-5 bg-blue-500 ml-1 animate-pulse" />
             )}
           </div>
         ) : (
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+          <MarkdownWithAddresses content={content} />
         )}
       </div>
     </div>

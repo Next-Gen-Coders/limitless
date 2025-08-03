@@ -13,12 +13,13 @@ import {
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Separator } from "./ui/separator";
-import { ScrollArea } from "./ui/scroll-area";
 import SidebarNavItem from "./ui/sidebar-nav-item";
-import ChatItem from "./ui/chat-item";
 import Logo from "./ui/logo";
 import MobileOverlay from "./ui/mobile-overlay";
-import { navigationItems, recentChats } from "../constants/sidebar";
+import { navigationItems } from "../constants/sidebar";
+import { useGetUserChats } from "../hooks/services/useChat";
+import { useUserId } from "../stores/userStore";
+import type { Chat } from "../types/api";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -26,6 +27,8 @@ interface SidebarProps {
   isMobile: boolean;
   isOpen: boolean;
   onClose: () => void;
+  onChatSelect?: (chatId: string) => void;
+  onNewChat?: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -34,14 +37,60 @@ const Sidebar: React.FC<SidebarProps> = ({
   isMobile,
   isOpen,
   onClose,
+  onChatSelect,
+  onNewChat,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Get current user ID from Zustand store
+  const userId = useUserId();
+
+  // Fetch user chats
+  const {
+    data: userChatsResponse,
+    isLoading: isLoadingChats,
+    error: chatsError
+  } = useGetUserChats(userId || "", !!userId);
+
+  // Extract the chats array from the API response
+  const userChats = React.useMemo(() => userChatsResponse?.data || [], [userChatsResponse]);
+
+  // Debug log to understand the structure
+  React.useEffect(() => {
+    if (userChatsResponse) {
+      console.log("userChatsResponse:", userChatsResponse);
+      console.log("extracted userChats:", userChats);
+      console.log("userChats length:", userChats.length);
+    }
+  }, [userChatsResponse, userChats]);
+
+  // Filter chats based on search query
+  const filteredChats = userChats.filter((chat: Chat) =>
+    chat.title?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleNewChat = () => {
+    if (onNewChat) {
+      onNewChat();
+    }
+    if (isMobile) {
+      onClose();
+    }
+  };
+
+  const handleChatClick = (chatId: string) => {
+    if (onChatSelect) {
+      onChatSelect(chatId);
+    }
+    if (isMobile) {
+      onClose();
+    }
+  };
+
   const sidebarContent = (
     <div
-      className={`bg-sidebar border-r border-sidebar-border transition-all duration-300 ${
-        isCollapsed ? "w-16" : "w-64"
-      } flex flex-col h-full`}
+      className={`bg-sidebar border-r border-sidebar-border transition-all duration-300 ${isCollapsed ? "w-16" : "w-64"
+        } flex flex-col h-full`}
     >
       {/* Header */}
       <div className="p-4 border-b border-sidebar-border">
@@ -67,9 +116,9 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* Navigation */}
       <div className="p-4 space-y-2">
         <Button
-          className={`w-full dark:bg-white dark:text-black text-white bg-black hover:bg-sidebar-primary/90 ${
-            isCollapsed ? "justify-center" : "justify-start"
-          }`}
+          onClick={handleNewChat}
+          className={`w-full dark:bg-white dark:text-black text-white bg-black hover:bg-sidebar-primary/90 ${isCollapsed ? "justify-center" : "justify-start"
+            }`}
         >
           <Plus size={16} />
           {!isCollapsed && "New Chat"}
@@ -81,6 +130,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             icon={item.icon}
             label={item.label}
             active={item.active}
+            visible={item.visible}
             isCollapsed={isCollapsed}
           />
         ))}
@@ -108,13 +158,39 @@ const Sidebar: React.FC<SidebarProps> = ({
 
             <div className="space-y-2">
               <h3 className="text-sm font-medium text-sidebar-foreground mb-3">
-                Recent Chats
+                Your Chats
               </h3>
-              <ScrollArea className="h-full">
-                {recentChats.map((chat) => (
-                  <ChatItem key={chat.id} title={chat.title} time={chat.time} />
-                ))}
-              </ScrollArea>
+
+              {isLoadingChats ? (
+                <div className="text-muted-foreground text-sm text-center py-4">
+                  Loading chats...
+                </div>
+              ) : chatsError ? (
+                <div className="text-red-500 text-sm text-center py-4">
+                  Error loading chats: {chatsError.message}
+                </div>
+              ) : filteredChats.length > 0 ? (
+                <div className="space-y-1 max-h-64 overflow-y-auto">
+                  {filteredChats.map((chat: Chat) => (
+                    <button
+                      key={chat.id}
+                      onClick={() => handleChatClick(chat.id)}
+                      className="w-full text-left p-2 rounded-md hover:bg-sidebar-accent/50 transition-colors group"
+                    >
+                      <div className="text-sm text-sidebar-foreground truncate">
+                        {chat.title}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {new Date(chat.updatedAt).toLocaleDateString()}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-muted-foreground text-sm text-center py-8">
+                  {searchQuery ? "No chats found" : "No chats yet"}
+                </div>
+              )}
             </div>
           </>
         )}
@@ -192,9 +268,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         <MobileOverlay isOpen={isOpen} onClose={onClose} />
 
         <div
-          className={`fixed top-0 left-0 h-full z-50 lg:hidden transform transition-transform duration-300 ease-in-out ${
-            isOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+          className={`fixed top-0 left-0 h-full z-50 lg:hidden transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
         >
           {sidebarContent}
         </div>

@@ -7,6 +7,7 @@ interface SidebarNavItemProps {
   label: string;
   active?: boolean;
   isCollapsed?: boolean;
+  visible?: boolean;
   onClick?: () => void;
 }
 
@@ -15,16 +16,18 @@ const SidebarNavItem: React.FC<SidebarNavItemProps> = ({
   label,
   active = false,
   isCollapsed = false,
+  visible = true,
   onClick,
 }) => {
+  if (!visible) return null;
+
   return (
     <Button
       variant={active ? "secondary" : "ghost"}
-      className={`w-full ${
-        active
-          ? "bg-sidebar-accent text-sidebar-accent-foreground"
-          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-      } ${isCollapsed ? "justify-center" : "justify-start"}`}
+      className={`w-full ${active
+        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+        } ${isCollapsed ? "justify-center" : "justify-start"}`}
       onClick={onClick}
     >
       <Icon size={16} />
