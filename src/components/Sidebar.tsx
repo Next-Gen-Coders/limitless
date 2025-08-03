@@ -170,7 +170,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   Error loading chats: {chatsError.message}
                 </div>
               ) : filteredChats.length > 0 ? (
-                <div className="space-y-1 max-h-64 overflow-y-auto">
+                <div className="space-y-1 h-full overflow-y-auto scrollbar-hide">
                   {filteredChats.map((chat: Chat) => (
                     <button
                       key={chat.id}
