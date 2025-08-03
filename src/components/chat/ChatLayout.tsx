@@ -1,10 +1,12 @@
 import AiMsg from "./AiMsg";
+import EnhancedAiMsg from "./EnhancedAiMsg";
 import UserMsg from "./UserMsg";
 import PromptInput from "./PromptInput";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRef } from "react";
 import type { Message } from "../../types/api";
 import { ChatState } from "../../enums/chat";
+import { useSwapMessages } from "../../hooks/useSwapMessageContext";
 
 interface ChatLayoutProps {
   // State from hooks
@@ -29,6 +31,7 @@ const ChatLayout = ({
   showLoadingSpinner = true,
 }: ChatLayoutProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { getSwapMessage } = useSwapMessages();
 
   return (
     <div className="w-full h-full bg-background flex-1">
@@ -97,15 +100,29 @@ const ChatLayout = ({
                 )}
 
               {/* Messages */}
-              {currentMessages.map((message) => (
-                <div key={message.id}>
-                  {message.role === "assistant" ? (
-                    <AiMsg content={message.content} />
-                  ) : (
-                    <UserMsg message={message.content} />
-                  )}
-                </div>
-              ))}
+              {currentMessages.map((message) => {
+                const enhancedData = getSwapMessage(message.id);
+
+                return (
+                  <div key={message.id}>
+                    {message.role === "assistant" ? (
+                      enhancedData ? (
+                        <EnhancedAiMsg
+                          content={message.content}
+                          chatId={message.chatId}
+                          messageId={message.id}
+                          swapData={enhancedData.swapData}
+                          toolsUsed={enhancedData.toolsUsed}
+                        />
+                      ) : (
+                        <AiMsg content={message.content} />
+                      )
+                    ) : (
+                      <UserMsg message={message.content} />
+                    )}
+                  </div>
+                );
+              })}
 
               {/* Thinking state */}
               {isThinking && currentMessages.length > 0 && (

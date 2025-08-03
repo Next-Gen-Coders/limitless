@@ -6,6 +6,7 @@ import { useCreateChat } from "./services/useChat";
 import { useCreateMessage } from "./services/useMessage";
 import { useGetChatMessages } from "./services/useMessage";
 import { useUserId } from "../stores/userStore";
+import { useSwapMessages } from "./useSwapMessageContext";
 import { linechart } from "../constants/linechart";
 import { candlechart } from "../constants/candlechart";
 
@@ -44,6 +45,9 @@ export const useChatContainer = (
   // API mutations
   const createChat = useCreateChat();
   const createMessage = useCreateMessage();
+
+  // Swap message management
+  const { addSwapMessage, clearSwapMessages } = useSwapMessages();
 
   // API queries - for loading existing chat messages
   const { data: chatMessagesResponse, isLoading: isLoadingChatMessages } =
@@ -85,7 +89,8 @@ export const useChatContainer = (
     setCurrentMessages([]);
     setChatState(ChatState.INITIAL);
     setIsThinking(false);
-  }, []);
+    clearSwapMessages(); // Clear swap messages when starting new chat
+  }, [clearSwapMessages]);
 
   // Effect to update current messages when chatMessages changes
   // Only update from API when we're not in thinking state (to avoid overriding optimistic updates)
@@ -198,10 +203,27 @@ export const useChatContainer = (
 
         console.log("Message created successfully:", messageResponse);
 
+        // Check if response contains enhanced data (like your example)
+        const enhancedResponse = messageResponse as any;
+
         // Update local state with the new messages
-        const newMessages: Message[] = [messageResponse.userMessage];
-        if (messageResponse.aiMessage) {
-          newMessages.push(messageResponse.aiMessage);
+        const newMessages: Message[] = [
+          enhancedResponse.userMessage || messageResponse.data,
+        ];
+        if (enhancedResponse.aiMessage) {
+          newMessages.push(enhancedResponse.aiMessage);
+
+          // Store swap data if present
+          if (enhancedResponse.swapData && enhancedResponse.aiMessage.id) {
+            addSwapMessage(enhancedResponse.aiMessage.id, {
+              swapData: enhancedResponse.swapData,
+              toolsUsed: enhancedResponse.toolsUsed || [],
+              chartData: enhancedResponse.chartData,
+            });
+          }
+        } else if (messageResponse.data) {
+          // Fallback for standard response structure
+          newMessages.push(messageResponse.data);
         }
 
         setCurrentMessages((prev) => [...prev, ...newMessages]);
@@ -228,7 +250,14 @@ export const useChatContainer = (
         autoScrollToBottom();
       }
     },
-    [userId, currentChatId, createChat, createMessage, autoScrollToBottom]
+    [
+      userId,
+      currentChatId,
+      createChat,
+      createMessage,
+      autoScrollToBottom,
+      addSwapMessage,
+    ]
   );
 
   return {

@@ -158,6 +158,20 @@ export interface Message {
   updatedAt?: string;
 }
 
+export interface EnhancedMessage extends Message {
+  swapData?: SwapData;
+  toolsUsed?: string[];
+  chartData?: unknown;
+}
+
+export interface MessageWithSwapData {
+  userMessage: Message;
+  aiMessage: Message;
+  swapData?: SwapData;
+  toolsUsed?: string[];
+  chartData?: unknown;
+}
+
 export interface CreateMessageRequest {
   content: string;
   chatId: string;
@@ -173,6 +187,8 @@ export interface CreateMessageResponse {
   message: string;
   userMessage: Message;
   aiMessage?: Message; // Only present when role is "user"
+  chartData?: any;
+  swapData?: any;
 }
 
 export interface UpdateMessageResponse {
@@ -233,6 +249,84 @@ export interface DeleteChatContext {
 }
 
 // =============================================================================
+// SWAP API TYPES
+// =============================================================================
+
+export interface SwapQuoteRequest {
+  amount: string;
+  srcChainId: number;
+  dstChainId: number;
+  srcTokenAddress: string;
+  dstTokenAddress: string;
+}
+
+export interface SwapExecuteRequest extends SwapQuoteRequest {
+  chatId?: string;
+  messageId?: string;
+}
+
+export interface SwapQuote {
+  quoteId: string;
+  estimatedOutput: string;
+  estimatedOutputFormatted: string;
+  // Add other quote properties as needed
+}
+
+export interface SwapData {
+  amount: string;
+  srcChainId: number;
+  dstChainId: number;
+  srcTokenAddress: string;
+  dstTokenAddress: string;
+  srcTokenSymbol: string;
+  dstTokenSymbol: string;
+  walletAddress: string;
+  quote: SwapQuote;
+}
+
+export interface SwapTransaction {
+  id: string;
+  userId: string;
+  chatId?: string;
+  messageId?: string;
+  srcChainId: number;
+  dstChainId: number;
+  srcTokenAddress: string;
+  dstTokenAddress: string;
+  amount: string;
+  walletAddress: string;
+  orderHash?: string;
+  status: "pending" | "processing" | "completed" | "failed";
+  quote?: unknown;
+  secrets?: string[];
+  secretHashes?: string[];
+  errorDetails?: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type SwapQuoteResponse = ApiSuccessResponse<unknown>;
+
+export type SwapExecuteResponse = ApiSuccessResponse<{
+  swapId: string;
+  orderHash: string;
+}>;
+
+export type SwapStatusResponse = ApiSuccessResponse<SwapTransaction>;
+
+export type UserSwapsResponse = ApiSuccessResponse<SwapTransaction[]>;
+
+// Swap Query Keys
+export interface SwapQueryKeys {
+  all: readonly string[];
+  lists: () => readonly string[];
+  list: (userId: string) => readonly string[];
+  details: () => readonly string[];
+  detail: (id: string) => readonly string[];
+  status: (swapId: string) => readonly string[];
+}
+
+// =============================================================================
 // API ENDPOINT PATHS
 // =============================================================================
 
@@ -255,4 +349,10 @@ export const API_ENDPOINTS = {
   MESSAGE_BY_ID: (id: string) => `/user/messages/${id}`,
   CHAT_MESSAGES: (chatId: string) => `/user/chats/${chatId}/messages`,
   USER_MESSAGES: (userId: string) => `/user/users/${userId}/messages`,
+
+  // Swap
+  SWAP_QUOTE: "/swap/quote",
+  SWAP_EXECUTE: "/swap/execute",
+  SWAP_STATUS: (swapId: string) => `/swap/status/${swapId}`,
+  USER_SWAPS: "/swap/user/swaps",
 } as const;

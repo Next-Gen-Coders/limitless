@@ -7,11 +7,13 @@ import HealthPage from "./components/HealthPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import PrivyProvider from "./providers/PrivyProvider";
+import { Toaster } from "sonner";
 
 function App() {
   return (
     <PrivyProvider>
       <ThemeProvider>
+        <Toaster position="bottom-right" />
         <Router>
           <Routes>
             <Route path="/" element={<LandingPage />} />

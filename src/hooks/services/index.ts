@@ -3,6 +3,7 @@ export * from "./useHealth";
 export * from "./useUserSync";
 export * from "./useChat";
 export * from "./useMessage";
+export * from "./useSwap";
 
 // Export API clients
 export { default as authenticatedApiClient } from "../../lib/config/authenticatedApiClient";
