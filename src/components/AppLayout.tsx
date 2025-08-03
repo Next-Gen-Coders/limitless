@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
-import { Menu } from "lucide-react";
+import { Menu, LogOut, Wallet } from "lucide-react";
 import { Button } from "./ui/button";
 import ThemeToggle from "./ui/theme-toggle";
 import { useResponsive } from "../hooks/useResponsive";
+import { usePrivy } from "@privy-io/react-auth";
+import { logPrivyUserData, logPrivyLogin, logPrivyLogout } from "../utils/privyLogger";
+import { useUserSync } from "../hooks/services";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -12,7 +15,10 @@ interface AppLayoutProps {
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [hasSynced, setHasSynced] = useState(false);
   const { isMobile } = useResponsive();
+  const { authenticated, user, login, logout, ready } = usePrivy();
+  const userSyncMutation = useUserSync();
 
   // Close mobile sidebar when screen becomes larger
   useEffect(() => {
@@ -20,6 +26,74 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       setIsMobileSidebarOpen(false);
     }
   }, [isMobile]);
+
+  // Log all Privy user data when authentication state changes
+  useEffect(() => {
+    if (ready) {
+      logPrivyUserData(user, authenticated, ready);
+    }
+  }, [authenticated, user, ready]);
+
+  // Sync user to backend when authenticated (only once per user)
+  useEffect(() => {
+    if (authenticated && user && !hasSynced && !userSyncMutation.isPending) {
+      userSyncMutation.mutate(user, {
+        onSuccess: () => {
+          setHasSynced(true);
+        },
+        onError: () => {
+          // Still mark as synced to prevent retry loops, but user sync failed
+          setHasSynced(true);
+        },
+      });
+    }
+  }, [authenticated, user, hasSynced, userSyncMutation]);
+
+  // Reset sync state when user changes or logs out
+  useEffect(() => {
+    if (!authenticated) {
+      setHasSynced(false);
+    }
+  }, [authenticated, user?.id]);
+
+  // Track login/logout events specifically
+  const [previousAuthState, setPreviousAuthState] = useState(false);
+  
+  useEffect(() => {
+    if (ready && authenticated !== previousAuthState) {
+      if (authenticated && user) {
+        logPrivyLogin(user);
+      } else if (!authenticated && previousAuthState) {
+        logPrivyLogout();
+      }
+      setPreviousAuthState(authenticated);
+    }
+  }, [authenticated, user, ready, previousAuthState]);
+
+  // Function to format wallet address
+  const formatAddress = (address: string) => {
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
+  // Get display address (wallet or email)
+  const getDisplayInfo = () => {
+    if (user?.wallet?.address) {
+      return {
+        type: 'wallet',
+        value: formatAddress(user.wallet.address),
+        fullValue: user.wallet.address
+      };
+    } else if (user?.email?.address) {
+      return {
+        type: 'email',
+        value: user.email.address.length > 20 
+          ? `${user.email.address.slice(0, 17)}...` 
+          : user.email.address,
+        fullValue: user.email.address
+      };
+    }
+    return null;
+  };
 
   return (
     <div className="flex h-screen bg-background">
@@ -68,6 +142,43 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
           <div className="flex items-center space-x-4">
             <ThemeToggle />
+            
+            {/* Authentication Section */}
+            {authenticated ? (
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-accent/50 border">
+                  <Wallet size={16} className="text-muted-foreground" />
+                  <span className="text-sm font-medium" title={getDisplayInfo()?.fullValue}>
+                    {getDisplayInfo()?.value}
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={logout}
+                  className="text-muted-foreground hover:text-foreground"
+                  title="Logout"
+                >
+                  <LogOut size={16} />
+                </Button>
+              </div>
+            ) : (
+              <Button
+                onClick={login}
+                size="sm"
+                disabled={userSyncMutation.isPending}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                {userSyncMutation.isPending ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                    Syncing...
+                  </>
+                ) : (
+                  "Login with Privy"
+                )}
+              </Button>
+            )}
           </div>
         </header>
 
