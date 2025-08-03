@@ -122,16 +122,18 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     });
   },
 
-  startMessageResponse: () =>
+  startMessageResponse: (message?: string) =>
     set({
       chatState: ChatState.THINKING,
       pendingMessageResponse: true,
+      pendingUserMessage: message || null,
     }),
 
   completeMessageResponse: () =>
     set({
       chatState: ChatState.CHATTING,
       pendingMessageResponse: false,
+      pendingUserMessage: null,
     }),
 
   resetToInitial: () => {

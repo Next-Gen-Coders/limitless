@@ -53,7 +53,6 @@ const ChatLayout = ({
   const clearNewMessageMark = useChatStore(
     (state) => state.clearNewMessageMark
   );
-
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

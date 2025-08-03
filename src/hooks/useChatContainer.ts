@@ -52,7 +52,7 @@ export const useChatContainer = (
   const {
     data: chatMessagesResponse,
     isLoading: isLoadingChatMessages,
-    error: chatMessagesError,
+    // error: chatMessagesError,
   } = useGetChatMessages(currentChatId || "", !!currentChatId && apiAvailable);
 
   // Debug logging
@@ -406,7 +406,7 @@ export const useChatContainer = (
     currentMessages,
     showInitialState,
     isThinking,
-    isLoadingChatMessages,
+    isLoadingChatMessages: false,
     handlePromptSubmit,
     apiAvailable,
     apiError,
