@@ -10,175 +10,167 @@ export const candlechart = {
   token0: "0x6b175474e89094c44da98b954eedeac495271d0f", // DAI
   token1: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", // ETH
   chainId: 1, // Ethereum Mainnet
-  seconds: 86400, // Candle duration (e.g., 86400 for 1 day)
+  seconds: 3600,                                         // 1 hour candles
   candles: [
     {
-      timestamp: 1719859200,
-      open: 0.00035,
-      high: 0.00037,
-      low: 0.00034,
-      close: 0.00036,
-      volume: 1250.5,
+      timestamp: 1725364800, // Aug 3, 2025 12:00 PM
+      open: 60.15,
+      high: 60.45,
+      low: 59.85,
+      close: 60.32,
+      volume: 2150.5
     },
     {
-      timestamp: 1719872400,
-      open: 0.00036,
-      high: 0.00038,
-      low: 0.00035,
-      close: 0.00037,
-      volume: 980.3,
+      timestamp: 1725368400, // Aug 3, 2025 1:00 PM
+      open: 60.32,
+      high: 60.78,
+      low: 60.12,
+      close: 60.65,
+      volume: 1890.3
     },
     {
-      timestamp: 1719885600,
-      open: 0.00037,
-      high: 0.00039,
-      low: 0.00036,
-      close: 0.00038,
-      volume: 1142.7,
+      timestamp: 1725372000, // Aug 3, 2025 2:00 PM
+      open: 60.65,
+      high: 61.25,
+      low: 60.48,
+      close: 60.98,
+      volume: 2340.7
     },
     {
-      timestamp: 1719898800,
-      open: 0.00038,
-      high: 0.0004,
-      low: 0.00037,
-      close: 0.00039,
-      volume: 1350.2,
+      timestamp: 1725375600, // Aug 3, 2025 3:00 PM
+      open: 60.98,
+      high: 61.35,
+      low: 60.75,
+      close: 61.12,
+      volume: 1650.2
     },
     {
-      timestamp: 1719912000,
-      open: 0.00039,
-      high: 0.00041,
-      low: 0.00038,
-      close: 0.0004,
-      volume: 1580.8,
+      timestamp: 1725379200, // Aug 3, 2025 4:00 PM
+      open: 61.12,
+      high: 61.45,
+      low: 60.95,
+      close: 61.28,
+      volume: 1980.8
     },
     {
-      timestamp: 1719925200,
-      open: 0.0004,
-      high: 0.00042,
-      low: 0.00039,
-      close: 0.00041,
-      volume: 1420.1,
+      timestamp: 1725382800, // Aug 3, 2025 5:00 PM
+      open: 61.28,
+      high: 61.85,
+      low: 61.15,
+      close: 61.72,
+      volume: 2520.1
     },
     {
-      timestamp: 1719938400,
-      open: 0.00041,
-      high: 0.00043,
-      low: 0.0004,
-      close: 0.00042,
-      volume: 1680.4,
+      timestamp: 1725386400, // Aug 3, 2025 6:00 PM
+      open: 61.72,
+      high: 62.15,
+      low: 61.45,
+      close: 61.89,
+      volume: 2180.4
     },
     {
-      timestamp: 1719951600,
-      open: 0.00042,
-      high: 0.00044,
-      low: 0.00041,
-      close: 0.00043,
-      volume: 1920.6,
+      timestamp: 1725390000, // Aug 3, 2025 7:00 PM
+      open: 61.89,
+      high: 62.35,
+      low: 61.68,
+      close: 62.18,
+      volume: 2890.6
     },
     {
-      timestamp: 1719964800,
-      open: 0.00043,
-      high: 0.00045,
-      low: 0.00042,
-      close: 0.00044,
-      volume: 2100.3,
+      timestamp: 1725393600, // Aug 3, 2025 8:00 PM
+      open: 62.18,
+      high: 62.65,
+      low: 61.95,
+      close: 62.42,
+      volume: 3150.3
     },
     {
-      timestamp: 1719978000,
-      open: 0.00044,
-      high: 0.00046,
-      low: 0.00043,
-      close: 0.00045,
-      volume: 1850.7,
+      timestamp: 1725397200, // Aug 3, 2025 9:00 PM
+      open: 62.42,
+      high: 62.88,
+      low: 62.25,
+      close: 62.75,
+      volume: 2750.7
     },
     {
-      timestamp: 1719991200,
-      open: 0.00045,
-      high: 0.00047,
-      low: 0.00044,
-      close: 0.00046,
-      volume: 2200.9,
+      timestamp: 1725400800, // Aug 3, 2025 10:00 PM
+      open: 62.75,
+      high: 63.12,
+      low: 62.58,
+      close: 62.95,
+      volume: 3420.9
     },
     {
-      timestamp: 1720004400,
-      open: 0.00046,
-      high: 0.00048,
-      low: 0.00045,
-      close: 0.00047,
-      volume: 2400.2,
+      timestamp: 1725404400, // Aug 3, 2025 11:00 PM
+      open: 62.95,
+      high: 63.45,
+      low: 62.78,
+      close: 63.28,
+      volume: 2980.2
     },
     {
-      timestamp: 1720017600,
-      open: 0.00047,
-      high: 0.00049,
-      low: 0.00046,
-      close: 0.00048,
-      volume: 2600.5,
+      timestamp: 1725408000, // Aug 4, 2025 12:00 AM
+      open: 63.28,
+      high: 63.75,
+      low: 63.05,
+      close: 63.58,
+      volume: 3650.5
     },
     {
-      timestamp: 1720030800,
-      open: 0.00048,
-      high: 0.0005,
-      low: 0.00047,
-      close: 0.00049,
-      volume: 2800.8,
+      timestamp: 1725411600, // Aug 4, 2025 1:00 AM
+      open: 63.58,
+      high: 63.95,
+      low: 63.35,
+      close: 63.82,
+      volume: 3280.8
     },
     {
-      timestamp: 1720044000,
-      open: 0.00049,
-      high: 0.00051,
-      low: 0.00048,
-      close: 0.0005,
-      volume: 3000.1,
+      timestamp: 1725415200, // Aug 4, 2025 2:00 AM
+      open: 63.82,
+      high: 64.25,
+      low: 63.65,
+      close: 64.15,
+      volume: 4100.1
     },
     {
-      timestamp: 1720057200,
-      open: 0.0005,
-      high: 0.00052,
-      low: 0.00049,
-      close: 0.00051,
-      volume: 3200.4,
+      timestamp: 1725418800, // Aug 4, 2025 3:00 AM
+      open: 64.15,
+      high: 64.58,
+      low: 63.95,
+      close: 64.42,
+      volume: 3850.4
     },
     {
-      timestamp: 1720070400,
-      open: 0.00051,
-      high: 0.00053,
-      low: 0.0005,
-      close: 0.00052,
-      volume: 3400.7,
+      timestamp: 1725422400, // Aug 4, 2025 4:00 AM
+      open: 64.42,
+      high: 64.85,
+      low: 64.18,
+      close: 64.68,
+      volume: 4520.7
     },
     {
-      timestamp: 1720083600,
-      open: 0.00052,
-      high: 0.00054,
-      low: 0.00051,
-      close: 0.00053,
-      volume: 3600.0,
+      timestamp: 1725426000, // Aug 4, 2025 5:00 AM
+      open: 64.68,
+      high: 65.15,
+      low: 64.45,
+      close: 64.95,
+      volume: 4200.0
     },
     {
-      timestamp: 1720096800,
-      open: 0.00053,
-      high: 0.00055,
-      low: 0.00052,
-      close: 0.00054,
-      volume: 3800.3,
+      timestamp: 1725429600, // Aug 4, 2025 6:00 AM
+      open: 64.95,
+      high: 65.38,
+      low: 64.72,
+      close: 65.25,
+      volume: 4850.3
     },
     {
-      timestamp: 1720110000,
-      open: 0.00054,
-      high: 0.00056,
-      low: 0.00053,
-      close: 0.00055,
-      volume: 4000.6,
-    },
-    {
-      timestamp: 1720123200,
-      open: 0.00055,
-      high: 0.00057,
-      low: 0.00054,
-      close: 0.00056,
-      volume: 4200.9,
-    },
-  ],
+      timestamp: 1725433200, // Aug 4, 2025 7:00 AM
+      open: 65.25,
+      high: 65.75,
+      low: 65.08,
+      close: 65.58,
+      volume: 5120.6
+    }
+  ]
 };

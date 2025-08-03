@@ -7,7 +7,7 @@ import { detectAddresses } from "../../utils/addressDetection";
 import AddressTag from "../ui/AddressTag";
 import type { DetectedAddress } from "../../utils/addressDetection";
 import { CryptoLineChart } from "../ui/CryptoLineChart";
-import { CryptoCandleChart } from "../ui/CryptoCandleChart";
+import CryptoCandleChart from "../ui/CryptoCandleChart";
 import { linechart } from "../../constants/linechart";
 import { candlechart } from "../../constants/candlechart";
 
@@ -64,11 +64,7 @@ const renderContentWithCharts = (content: string) => {
           />
         )}
         {chartData.type === "candle" && (
-          <CryptoCandleChart
-            chartData={chartData.data as any}
-            title="Token Price Candlestick Analysis"
-            description="Price movement with OHLC data"
-          />
+          <CryptoCandleChart data={chartData.data as any} />
         )}
       </div>
     );
