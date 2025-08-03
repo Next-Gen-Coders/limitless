@@ -245,7 +245,7 @@ const AiMsg = ({
             className="w-10 h-10 rounded-full dark:invert"
           />
         </div>
-        <p className="font-medium text-foreground">Limitless AI</p>
+        <p className="font-medium text-foreground">Limitless</p>
       </div>
 
       <div className="mt-4 sm:ml-14 prose prose-sm max-w-none">
